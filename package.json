@@ -1,0 +1,25 @@
+{
+  "name": "interview-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enterprise Interview Management System with Multi-Panelist Scheduling Engine, Calendar Sync, and Anti-Bias Scorecards",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "seed": "cd backend && npm run seed"
+  },
+  "keywords": [
+    "interview-management-system",
+    "ats",
+    "scheduling-engine",
+    "calendar-sync",
+    "anti-bias-scorecards",
+    "concurrency-control",
+    "mern"
+  ],
+  "author": "Engineering Architecture Team",
+  "license": "MIT"
+}
