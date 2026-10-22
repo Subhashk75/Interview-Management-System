@@ -24,6 +24,8 @@ export interface Candidate {
   currentTitle?: string;
   experienceYears?: number;
   skills: string[];
+  appliedJobId?: Job | { _id: string; title: string; department: string; location?: string };
+  stage?: 'APPLIED' | 'SCREENING' | 'INTERVIEWING' | 'OFFER' | 'HIRED' | 'REJECTED';
   resumeUrl?: string;
   linkedinUrl?: string;
   timezone: string;
@@ -37,6 +39,7 @@ export interface Job {
   department: string;
   location: string;
   status: 'DRAFT' | 'OPEN' | 'PAUSED' | 'CLOSED';
+  openingsCount?: number;
   hiringManagerId?: User;
   recruiterId?: User;
   rounds?: InterviewRound[];
@@ -91,4 +94,82 @@ export interface TimeSlot {
   endTime: string;
   availableInterviewers: string[];
   isConflicted: boolean;
+}
+
+export interface OpenRoleStat {
+  _id: string;
+  title: string;
+  department: string;
+  location: string;
+  employmentType: string;
+  status: string;
+  openingsCount: number;
+  applicantCount: number;
+  candidatesByStage: Record<string, number>;
+  interviewsScheduled: number;
+  roundsCount: number;
+  hiringManager?: { firstName: string; lastName: string; title?: string };
+  recruiter?: { firstName: string; lastName: string };
+}
+
+export interface CandidateWithRole {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  currentCompany?: string;
+  currentTitle?: string;
+  skills: string[];
+  appliedJob?: { _id: string; title: string; department: string; location?: string };
+  stage: 'APPLIED' | 'SCREENING' | 'INTERVIEWING' | 'OFFER' | 'HIRED' | 'REJECTED';
+  latestInterview?: {
+    _id: string;
+    roundName: string;
+    startTime: string;
+    endTime: string;
+    status: string;
+    meetingUrl?: string;
+  };
+  hasPendingScorecard: boolean;
+  createdAt: string;
+}
+
+export interface PendingFeedbackItem {
+  _id: string;
+  interviewId: string;
+  candidate: { _id?: string; firstName: string; lastName: string; email: string };
+  job: { _id?: string; title: string; department: string };
+  round: { _id?: string; name: string; type: string };
+  startTime: string;
+  endTime: string;
+  meetingUrl?: string;
+  elapsedHours: number;
+  isOverdue: boolean;
+  panelists: {
+    userId?: string;
+    name: string;
+    avatarUrl?: string;
+    title?: string;
+    hasSubmitted: boolean;
+    scorecardStatus: 'DRAFT' | 'SUBMITTED' | 'NOT_STARTED';
+  }[];
+  pendingCount: number;
+  totalPanelists: number;
+}
+
+export interface DashboardStats {
+  totalCandidates: number;
+  activeJobs: number;
+  totalOpenings: number;
+  totalInterviews: number;
+  pendingScorecardsCount: number;
+  openRoles: OpenRoleStat[];
+  candidatesWithRole: CandidateWithRole[];
+  pendingFeedbackInterviews: PendingFeedbackItem[];
+  funnelStats: Record<string, number>;
+  upcomingInterviews: Interview[];
+  statusBreakdown: Record<string, number>;
+  interviewerCount: number;
+  interviewers: any[];
 }

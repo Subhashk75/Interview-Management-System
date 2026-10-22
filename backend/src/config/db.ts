@@ -121,10 +121,39 @@ async function autoSeedData() {
     location: 'New York / Hybrid',
     employmentType: 'FULL_TIME',
     status: 'OPEN',
+    openingsCount: 3,
     hiringManagerId: interviewer1._id,
     recruiterId: recruiter._id,
     description: 'Looking for a Senior Full Stack Engineer to lead scalable interview workflow microservices.',
     requirements: ['5+ years React/Node.js', 'Experience with distributed systems', 'Strong API design'],
+  });
+
+  const job2 = await Job.create({
+    organizationId: org._id,
+    title: 'Staff Distributed Systems Architect',
+    department: 'Platform Engineering',
+    location: 'Remote',
+    employmentType: 'FULL_TIME',
+    status: 'OPEN',
+    openingsCount: 2,
+    hiringManagerId: interviewer1._id,
+    recruiterId: recruiter._id,
+    description: 'Architect next-generation real-time availability and calendar synchronization engines.',
+    requirements: ['8+ years distributed systems', 'Redis locking & ACID transactions', 'Cloud native'],
+  });
+
+  const job3 = await Job.create({
+    organizationId: org._id,
+    title: 'Lead Frontend UI/UX Architect',
+    department: 'Design & Engineering',
+    location: 'San Francisco / Hybrid',
+    employmentType: 'FULL_TIME',
+    status: 'OPEN',
+    openingsCount: 2,
+    hiringManagerId: interviewer2._id,
+    recruiterId: recruiter._id,
+    description: 'Lead the frontend design system, accessible UI component library, and state management.',
+    requirements: ['6+ years React / TypeScript', 'Tailwind & Design Systems', 'Web Performance'],
   });
 
   const round1 = await InterviewRound.create({
@@ -157,6 +186,21 @@ async function autoSeedData() {
     ],
   });
 
+  const roundJob2 = await InterviewRound.create({
+    organizationId: org._id,
+    jobId: job2._id,
+    name: '1. Systems Architecture & Scalability',
+    order: 1,
+    type: 'SYSTEM_DESIGN',
+    durationMinutes: 60,
+    requiredInterviewerCount: 2,
+    qualifiedInterviewerPool: [interviewer1._id, interviewer2._id],
+    competencies: [
+      { name: 'Distributed Consensus & Replication', description: 'Raft, Paxos, and partition tolerance', weight: 1 },
+      { name: 'High Throughput Caching', description: 'Redis cluster and memory optimization', weight: 1 },
+    ],
+  });
+
   const cand1 = await Candidate.create({
     organizationId: org._id,
     firstName: 'Emily',
@@ -167,6 +211,8 @@ async function autoSeedData() {
     currentTitle: 'Senior Software Engineer',
     experienceYears: 6,
     skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'GraphQL', 'AWS'],
+    appliedJobId: job1._id,
+    stage: 'INTERVIEWING',
     resumeUrl: 'https://example.com/resumes/emily-zhang.pdf',
     timezone: 'America/Los_Angeles',
     notes: 'Exceptional background in real-time billing and dashboard architectures.',
@@ -182,9 +228,43 @@ async function autoSeedData() {
     currentTitle: 'Staff Backend Engineer',
     experienceYears: 9,
     skills: ['Go', 'Distributed Systems', 'Kafka', 'Redis', 'Kubernetes'],
+    appliedJobId: job2._id,
+    stage: 'INTERVIEWING',
     resumeUrl: 'https://example.com/resumes/jordan-miller.pdf',
     timezone: 'America/New_York',
     notes: 'Top tier systems architect.',
+  });
+
+  const cand3 = await Candidate.create({
+    organizationId: org._id,
+    firstName: 'Priya',
+    lastName: 'Nair',
+    email: 'priya.nair@example.com',
+    phone: '+1 650-555-0811',
+    currentCompany: 'Airbnb',
+    currentTitle: 'Lead UI Engineer',
+    experienceYears: 7,
+    skills: ['React', 'Tailwind', 'Design Systems', 'Microfrontends', 'State Management'],
+    appliedJobId: job3._id,
+    stage: 'SCREENING',
+    resumeUrl: 'https://example.com/resumes/priya-nair.pdf',
+    timezone: 'America/Los_Angeles',
+  });
+
+  const cand4 = await Candidate.create({
+    organizationId: org._id,
+    firstName: 'Alex',
+    lastName: 'Chen',
+    email: 'alex.chen@example.com',
+    phone: '+1 206-555-0188',
+    currentCompany: 'Amazon Web Services',
+    currentTitle: 'Senior Cloud Engineer',
+    experienceYears: 8,
+    skills: ['AWS', 'Distributed Systems', 'Node.js', 'Docker', 'DynamoDB'],
+    appliedJobId: job1._id,
+    stage: 'OFFER',
+    resumeUrl: 'https://example.com/resumes/alex-chen.pdf',
+    timezone: 'America/Los_Angeles',
   });
 
   const now = new Date();
@@ -195,6 +275,7 @@ async function autoSeedData() {
   const tomorrow11am = new Date(tomorrow10am);
   tomorrow11am.setHours(11, 0, 0, 0);
 
+  // Scheduled upcoming interview
   await Interview.create({
     organizationId: org._id,
     candidateId: cand1._id,
@@ -212,6 +293,63 @@ async function autoSeedData() {
     meetingUrl: 'https://meet.google.com/hsy-qwer-zxc',
     calendarEventId: 'cal_seed_001',
     version: 0,
+  });
+
+  // Completed interview yesterday with PENDING FEEDBACK (Interviewer 1 submitted, Interviewer 2 draft)
+  const yesterday2pm = new Date(now);
+  yesterday2pm.setDate(yesterday2pm.getDate() - 1);
+  yesterday2pm.setHours(14, 0, 0, 0);
+
+  const yesterday3pm = new Date(yesterday2pm);
+  yesterday3pm.setHours(15, 0, 0, 0);
+
+  const interviewYesterday = await Interview.create({
+    organizationId: org._id,
+    candidateId: cand2._id,
+    jobId: job2._id,
+    roundId: roundJob2._id,
+    interviewers: [
+      { userId: interviewer1._id, responseStatus: 'ACCEPTED', isLead: true },
+      { userId: interviewer2._id, responseStatus: 'ACCEPTED', isLead: false },
+    ],
+    startTime: yesterday2pm,
+    endTime: yesterday3pm,
+    timezone: 'America/New_York',
+    status: 'COMPLETED',
+    meetingType: 'GOOGLE_MEET',
+    meetingUrl: 'https://meet.google.com/xyz-uvwx-rst',
+    calendarEventId: 'cal_seed_002',
+    version: 1,
+  });
+
+  // Interviewer 1 submitted scorecard
+  await Scorecard.create({
+    organizationId: org._id,
+    interviewId: interviewYesterday._id,
+    candidateId: cand2._id,
+    interviewerId: interviewer1._id,
+    ratings: [
+      { name: 'Distributed Consensus & Replication', rating: 5, notes: 'Superb grasp of partition tolerance and vector clocks.' },
+      { name: 'High Throughput Caching', rating: 5, notes: 'Solid design with idempotent replay queues.' },
+    ],
+    overallRecommendation: 'STRONG_YES',
+    summaryFeedback: 'Exceptional systems architect. Strong clear communication and immediate cultural fit.',
+    status: 'SUBMITTED',
+    submittedAt: new Date(yesterday3pm.getTime() + 25 * 60 * 1000),
+  });
+
+  // Interviewer 2 draft scorecard (pending feedback!)
+  await Scorecard.create({
+    organizationId: org._id,
+    interviewId: interviewYesterday._id,
+    candidateId: cand2._id,
+    interviewerId: interviewer2._id,
+    ratings: [
+      { name: 'Distributed Consensus & Replication', rating: 4, notes: 'Good theoretical discussion.' },
+    ],
+    overallRecommendation: 'YES',
+    summaryFeedback: 'Drafting notes on resilience and caching layers...',
+    status: 'DRAFT',
   });
 
   logger.info('✅ Auto-seeding completed successfully!');

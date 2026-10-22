@@ -9,6 +9,7 @@ export interface IJob extends Document {
   location: string;
   employmentType: string; // 'FULL_TIME' | 'CONTRACT' | 'INTERN'
   status: JobStatus;
+  openingsCount: number;
   hiringManagerId: mongoose.Types.ObjectId;
   recruiterId: mongoose.Types.ObjectId;
   description?: string;
@@ -25,6 +26,7 @@ const JobSchema = new Schema<IJob>(
     location: { type: String, default: 'Remote' },
     employmentType: { type: String, default: 'FULL_TIME' },
     status: { type: String, enum: ['DRAFT', 'OPEN', 'PAUSED', 'CLOSED'], default: 'OPEN', index: true },
+    openingsCount: { type: Number, default: 1, min: 1 },
     hiringManagerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     recruiterId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     description: { type: String },

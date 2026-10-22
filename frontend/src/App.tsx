@@ -16,12 +16,20 @@ function AppContent() {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [scheduleCandidate, setScheduleCandidate] = useState<Candidate | null>(null);
+  const [scheduleJobId, setScheduleJobId] = useState<string | undefined>(undefined);
 
   const [isScorecardOpen, setIsScorecardOpen] = useState(false);
   const [activeInterview, setActiveInterview] = useState<Interview | null>(null);
 
+  const handleOpenSchedule = (c?: Candidate | null, jobId?: string) => {
+    setScheduleCandidate(c || null);
+    setScheduleJobId(jobId);
+    setIsScheduleOpen(true);
+  };
+
   const handleOpenScheduleForCandidate = (c: Candidate) => {
     setScheduleCandidate(c);
+    setScheduleJobId(undefined);
     setIsScheduleOpen(true);
   };
 
@@ -40,11 +48,9 @@ function AppContent() {
         <main className="flex-1 p-8 overflow-y-auto">
           {currentTab === 'dashboard' && (
             <DashboardPage
-              onOpenSchedule={() => {
-                setScheduleCandidate(null);
-                setIsScheduleOpen(true);
-              }}
+              onOpenSchedule={handleOpenSchedule}
               onOpenScorecard={handleOpenScorecard}
+              onNavigateTab={setCurrentTab}
             />
           )}
 
@@ -55,10 +61,7 @@ function AppContent() {
           {currentTab === 'interviews' && (
             <InterviewsPage
               onOpenScorecard={handleOpenScorecard}
-              onOpenSchedule={() => {
-                setScheduleCandidate(null);
-                setIsScheduleOpen(true);
-              }}
+              onOpenSchedule={() => handleOpenSchedule()}
             />
           )}
 
@@ -75,11 +78,16 @@ function AppContent() {
       {/* Interactive Global Modals */}
       <ScheduleModal
         isOpen={isScheduleOpen}
-        onClose={() => setIsScheduleOpen(false)}
+        onClose={() => {
+          setIsScheduleOpen(false);
+          setScheduleCandidate(null);
+          setScheduleJobId(undefined);
+        }}
         onSuccess={() => {
           // Trigger refresh if needed
         }}
         preselectedCandidate={scheduleCandidate}
+        preselectedJobId={scheduleJobId}
       />
 
       <ScorecardModal

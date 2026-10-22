@@ -8,6 +8,7 @@ interface ScheduleModalProps {
   onClose: () => void;
   onSuccess: () => void;
   preselectedCandidate?: Candidate | null;
+  preselectedJobId?: string;
 }
 
 export const ScheduleModal: React.FC<ScheduleModalProps> = ({
@@ -15,6 +16,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
   onClose,
   onSuccess,
   preselectedCandidate,
+  preselectedJobId,
 }) => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -60,7 +62,13 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
           setSelectedCandidateId(candRes.data[0]._id);
         }
 
-        if (jobRes.data?.length > 0) {
+        if (preselectedJobId) {
+          setSelectedJobId(preselectedJobId);
+          const targetJob = (jobRes.data || []).find((j: Job) => j._id === preselectedJobId);
+          if (targetJob?.rounds?.length) {
+            setSelectedRoundId(targetJob.rounds[0]._id);
+          }
+        } else if (jobRes.data?.length > 0) {
           const firstJob = jobRes.data[0];
           setSelectedJobId(firstJob._id);
           if (firstJob.rounds?.length > 0) {
@@ -76,7 +84,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
       }
     }
     loadData();
-  }, [isOpen, preselectedCandidate]);
+  }, [isOpen, preselectedCandidate, preselectedJobId]);
 
   // Update round options when job changes
   useEffect(() => {

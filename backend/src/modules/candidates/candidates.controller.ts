@@ -29,7 +29,11 @@ export async function getCandidates(req: AuthRequest, res: Response, next: NextF
     }
 
     const [candidates, total] = await Promise.all([
-      Candidate.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      Candidate.find(filter)
+        .populate('appliedJobId', 'title department location')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
       Candidate.countDocuments(filter),
     ]);
 
@@ -69,7 +73,22 @@ export async function getCandidateById(req: AuthRequest, res: Response, next: Ne
 
 export async function createCandidate(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { firstName, lastName, email, phone, currentCompany, currentTitle, experienceYears, skills, resumeUrl, linkedinUrl, timezone, notes } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      currentCompany,
+      currentTitle,
+      experienceYears,
+      skills,
+      appliedJobId,
+      stage,
+      resumeUrl,
+      linkedinUrl,
+      timezone,
+      notes,
+    } = req.body;
 
     const existing = await Candidate.findOne({
       organizationId: req.organizationId,
@@ -89,6 +108,8 @@ export async function createCandidate(req: AuthRequest, res: Response, next: Nex
       currentTitle,
       experienceYears,
       skills: Array.isArray(skills) ? skills : [],
+      appliedJobId: appliedJobId || undefined,
+      stage: stage || 'INTERVIEWING',
       resumeUrl,
       linkedinUrl,
       timezone: timezone || 'UTC',

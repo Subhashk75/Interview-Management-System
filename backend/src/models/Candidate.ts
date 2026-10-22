@@ -10,6 +10,8 @@ export interface ICandidate extends Document {
   currentTitle?: string;
   experienceYears?: number;
   skills: string[];
+  appliedJobId?: mongoose.Types.ObjectId;
+  stage: 'APPLIED' | 'SCREENING' | 'INTERVIEWING' | 'OFFER' | 'HIRED' | 'REJECTED';
   resumeUrl?: string;
   linkedinUrl?: string;
   timezone: string;
@@ -30,6 +32,13 @@ const CandidateSchema = new Schema<ICandidate>(
     currentTitle: { type: String },
     experienceYears: { type: Number, default: 0 },
     skills: [{ type: String }],
+    appliedJobId: { type: Schema.Types.ObjectId, ref: 'Job', index: true },
+    stage: {
+      type: String,
+      enum: ['APPLIED', 'SCREENING', 'INTERVIEWING', 'OFFER', 'HIRED', 'REJECTED'],
+      default: 'INTERVIEWING',
+      index: true,
+    },
     resumeUrl: { type: String },
     linkedinUrl: { type: String },
     timezone: { type: String, default: 'UTC' },

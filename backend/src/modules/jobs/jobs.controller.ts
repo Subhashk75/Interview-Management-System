@@ -30,7 +30,7 @@ export async function getJobs(req: AuthRequest, res: Response, next: NextFunctio
 
 export async function createJob(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { title, department, location, employmentType, hiringManagerId, description, requirements, rounds } = req.body;
+    const { title, department, location, employmentType, openingsCount, hiringManagerId, description, requirements, rounds } = req.body;
 
     const job = await Job.create({
       organizationId: req.organizationId,
@@ -38,6 +38,7 @@ export async function createJob(req: AuthRequest, res: Response, next: NextFunct
       department,
       location: location || 'Remote',
       employmentType: employmentType || 'FULL_TIME',
+      openingsCount: openingsCount ? parseInt(openingsCount, 10) : 1,
       hiringManagerId: hiringManagerId || req.userId,
       recruiterId: req.userId,
       description,
