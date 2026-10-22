@@ -68,6 +68,7 @@ async function autoSeedData() {
     title: 'VP of People & Talent',
     department: 'HR & Operations',
     skills: ['Leadership', 'Executive Search', 'Compensation'],
+    isVerified: true,
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
   });
 
@@ -81,6 +82,7 @@ async function autoSeedData() {
     title: 'Senior Technical Recruiter',
     department: 'Talent Acquisition',
     skills: ['Engineering Recruiting', 'Sourcing', 'Pipeline Management'],
+    isVerified: true,
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
   });
 
@@ -96,6 +98,7 @@ async function autoSeedData() {
     skills: ['System Design', 'Distributed Systems', 'Go', 'Node.js', 'MongoDB', 'Kafka'],
     weeklyCapacityHours: 4,
     dailyInterviewLimit: 2,
+    isVerified: true,
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
   });
 
@@ -111,6 +114,7 @@ async function autoSeedData() {
     skills: ['React', 'TypeScript', 'Frontend Architecture', 'Web Performance', 'UI/UX'],
     weeklyCapacityHours: 5,
     dailyInterviewLimit: 2,
+    isVerified: true,
     avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
   });
 
@@ -198,6 +202,21 @@ async function autoSeedData() {
     competencies: [
       { name: 'Distributed Consensus & Replication', description: 'Raft, Paxos, and partition tolerance', weight: 1 },
       { name: 'High Throughput Caching', description: 'Redis cluster and memory optimization', weight: 1 },
+    ],
+  });
+
+  const roundJob3 = await InterviewRound.create({
+    organizationId: org._id,
+    jobId: job3._id,
+    name: '1. UI/UX Architecture & React Deep Dive',
+    order: 1,
+    type: 'TECHNICAL',
+    durationMinutes: 60,
+    requiredInterviewerCount: 1,
+    qualifiedInterviewerPool: [interviewer2._id],
+    competencies: [
+      { name: 'Frontend Architecture & Rendering Optimization', description: 'State management, CSS layout, accessibility', weight: 1 },
+      { name: 'Component System Design', description: 'Reusability, design system consistency, ergonomics', weight: 1 },
     ],
   });
 

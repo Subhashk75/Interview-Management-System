@@ -5,6 +5,7 @@ import { Candidate } from '../../models/Candidate.js';
 import { InterviewRound } from '../../models/InterviewRound.js';
 import { Job } from '../../models/Job.js';
 import { calendarService } from '../calendar/calendar.service.js';
+import { emailService } from '../notifications/email.service.js';
 import { AppError } from '../../utils/appError.js';
 import { logger } from '../../utils/logger.js';
 
@@ -130,6 +131,7 @@ export class SchedulingService {
     endTime: string | Date;
     timezone?: string;
     meetingType?: 'GOOGLE_MEET' | 'MS_TEAMS' | 'ZOOM' | 'PHONE' | 'IN_PERSON';
+    organizerId?: string;
   }): Promise<IInterview> {
     const startTime = new Date(data.startTime);
     const endTime = new Date(data.endTime);
@@ -158,7 +160,11 @@ export class SchedulingService {
     // Step 2: Fetch metadata for calendar invite
     const candidate = await Candidate.findById(data.candidateId);
     const job = await Job.findById(data.jobId);
-    const round = await InterviewRound.findById(data.roundId);
+    let round = await InterviewRound.findById(data.roundId);
+    if (!round && job) {
+      // Fallback: check first round of job
+      round = await InterviewRound.findOne({ jobId: job._id }).sort({ order: 1 });
+    }
     const interviewers = await User.find({ _id: { $in: data.interviewerIds } });
 
     if (!candidate || !job || !round) {
@@ -186,7 +192,7 @@ export class SchedulingService {
       organizationId: data.organizationId,
       candidateId: data.candidateId,
       jobId: data.jobId,
-      roundId: data.roundId,
+      roundId: round._id,
       interviewers: data.interviewerIds.map((id, index) => ({
         userId: id,
         responseStatus: 'ACCEPTED',
@@ -204,6 +210,25 @@ export class SchedulingService {
 
     await interview.save();
     logger.info(`Scheduled interview ${interview._id} for candidate ${candidate.email} at ${startTime.toISOString()}`);
+
+    // Step 5: Send notification emails to Candidate, Interviewers, and HR/Organizer
+    try {
+      let organizer: any = null;
+      if (data.organizerId) {
+        organizer = await User.findById(data.organizerId);
+      }
+      await emailService.sendInterviewScheduledNotifications({
+        interview,
+        candidate,
+        job,
+        round,
+        interviewers,
+        organizer,
+      });
+    } catch (emailErr: any) {
+      logger.error('Error dispatching interview notification emails:', emailErr);
+    }
+
     return interview;
   }
 

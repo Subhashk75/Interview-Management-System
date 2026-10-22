@@ -5,7 +5,16 @@ import { User } from '../types/index.ts';
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password?: string) => Promise<{ requireOtp?: boolean; email?: string } | void>;
+  register: (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    organizationName?: string;
+  }) => Promise<{ requireOtp: boolean; email: string }>;
+  verifyOtp: (email: string, otp: string) => Promise<void>;
+  resendOtp: (email: string) => Promise<void>;
   logout: () => void;
   switchDemoRole: (role: 'ADMIN' | 'RECRUITER' | 'INTERVIEWER') => Promise<void>;
   loading: boolean;
@@ -29,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           logout();
         }
       } else {
-        // Auto-login as default Recruiter in development for seamless demo
+        // Auto-login as default Recruiter in development for initial seamless demo
         await switchDemoRole('RECRUITER');
       }
       setLoading(false);
@@ -38,11 +47,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password = 'Password123!') => {
-    const res: any = await api.post('/auth/login', { email, password });
+    try {
+      const res: any = await api.post('/auth/login', { email, password });
+      const { token: newToken, user: userData } = res.data;
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      setUser(userData);
+    } catch (err: any) {
+      if (err.response?.status === 403 && err.response?.data?.data?.requireOtp) {
+        return {
+          requireOtp: true,
+          email: err.response.data.data.email || email,
+        };
+      }
+      throw err;
+    }
+  };
+
+  const register = async (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    organizationName?: string;
+  }) => {
+    const res: any = await api.post('/auth/register', data);
+    return {
+      requireOtp: true,
+      email: res.data?.email || data.email,
+    };
+  };
+
+  const verifyOtp = async (email: string, otp: string) => {
+    const res: any = await api.post('/auth/verify-otp', { email, otp });
     const { token: newToken, user: userData } = res.data;
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(userData);
+  };
+
+  const resendOtp = async (email: string) => {
+    await api.post('/auth/resend-otp', { email });
   };
 
   const logout = () => {
@@ -68,7 +113,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, switchDemoRole, loading }}>
+    <AuthContext.Provider
+      value={{ user, token, login, register, verifyOtp, resendOtp, logout, switchDemoRole, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -11,6 +11,8 @@ export interface User {
   skills?: string[];
   weeklyCapacityHours?: number;
   dailyInterviewLimit?: number;
+  isActive?: boolean;
+  isVerified?: boolean;
   avatarUrl?: string;
 }
 

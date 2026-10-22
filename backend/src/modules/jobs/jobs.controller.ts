@@ -14,7 +14,23 @@ export async function getJobs(req: AuthRequest, res: Response, next: NextFunctio
 
     const jobsWithRounds = await Promise.all(
       jobs.map(async (job) => {
-        const rounds = await InterviewRound.find({ jobId: job._id }).sort({ order: 1 });
+        let rounds = await InterviewRound.find({ jobId: job._id }).sort({ order: 1 });
+        if (!rounds || rounds.length === 0) {
+          const defaultRound = await InterviewRound.create({
+            organizationId: req.organizationId,
+            jobId: job._id,
+            name: '1. Technical & Role Competency Round',
+            order: 1,
+            type: 'TECHNICAL',
+            durationMinutes: 60,
+            requiredInterviewerCount: 1,
+            competencies: [
+              { name: 'Role Domain Proficiency', description: 'Assesses core skills and technical depth', weight: 1 },
+              { name: 'Collaboration & Communication', description: 'Evaluates teamwork and problem-solving', weight: 1 },
+            ],
+          });
+          rounds = [defaultRound];
+        }
         return {
           ...job.toObject(),
           rounds,

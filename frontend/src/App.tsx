@@ -14,12 +14,15 @@ import { Candidate, Interview } from './types/index.ts';
 
 function AppContent() {
   const [currentTab, setCurrentTab] = useState('dashboard');
+  const [refreshKey, setRefreshKey] = useState(0);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [scheduleCandidate, setScheduleCandidate] = useState<Candidate | null>(null);
   const [scheduleJobId, setScheduleJobId] = useState<string | undefined>(undefined);
 
   const [isScorecardOpen, setIsScorecardOpen] = useState(false);
   const [activeInterview, setActiveInterview] = useState<Interview | null>(null);
+
+  const triggerRefresh = () => setRefreshKey((prev) => prev + 1);
 
   const handleOpenSchedule = (c?: Candidate | null, jobId?: string) => {
     setScheduleCandidate(c || null);
@@ -48,6 +51,7 @@ function AppContent() {
         <main className="flex-1 p-8 overflow-y-auto">
           {currentTab === 'dashboard' && (
             <DashboardPage
+              key={refreshKey}
               onOpenSchedule={handleOpenSchedule}
               onOpenScorecard={handleOpenScorecard}
               onNavigateTab={setCurrentTab}
@@ -55,21 +59,22 @@ function AppContent() {
           )}
 
           {currentTab === 'candidates' && (
-            <CandidatesPage onScheduleCandidate={handleOpenScheduleForCandidate} />
+            <CandidatesPage key={refreshKey} onScheduleCandidate={handleOpenScheduleForCandidate} />
           )}
 
           {currentTab === 'interviews' && (
             <InterviewsPage
+              key={refreshKey}
               onOpenScorecard={handleOpenScorecard}
               onOpenSchedule={() => handleOpenSchedule()}
             />
           )}
 
           {currentTab === 'scorecards' && (
-            <ScorecardsPage onOpenScorecard={handleOpenScorecard} />
+            <ScorecardsPage key={refreshKey} onOpenScorecard={handleOpenScorecard} />
           )}
 
-          {currentTab === 'interviewers' && <InterviewersPage />}
+          {currentTab === 'interviewers' && <InterviewersPage key={refreshKey} />}
 
           {currentTab === 'settings' && <SettingsPage />}
         </main>
@@ -84,7 +89,7 @@ function AppContent() {
           setScheduleJobId(undefined);
         }}
         onSuccess={() => {
-          // Trigger refresh if needed
+          triggerRefresh();
         }}
         preselectedCandidate={scheduleCandidate}
         preselectedJobId={scheduleJobId}
@@ -95,7 +100,7 @@ function AppContent() {
         onClose={() => setIsScorecardOpen(false)}
         interview={activeInterview}
         onSuccess={() => {
-          // Trigger refresh if needed
+          triggerRefresh();
         }}
       />
     </div>

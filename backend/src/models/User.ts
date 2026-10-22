@@ -17,6 +17,9 @@ export interface IUser extends Document {
   weeklyCapacityHours: number;
   dailyInterviewLimit: number;
   isActive: boolean;
+  isVerified: boolean;
+  otp?: string;
+  otpExpiresAt?: Date;
   avatarUrl?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
   createdAt: Date;
@@ -43,6 +46,9 @@ const UserSchema = new Schema<IUser>(
     weeklyCapacityHours: { type: Number, default: 5 },
     dailyInterviewLimit: { type: Number, default: 2 },
     isActive: { type: Boolean, default: true },
+    isVerified: { type: Boolean, default: false },
+    otp: { type: String, select: false },
+    otpExpiresAt: { type: Date, select: false },
     avatarUrl: { type: String },
   },
   { timestamps: true }

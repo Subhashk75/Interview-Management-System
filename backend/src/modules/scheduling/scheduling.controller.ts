@@ -36,6 +36,7 @@ export async function bookInterview(req: AuthRequest, res: Response, next: NextF
       endTime,
       timezone,
       meetingType,
+      organizerId: req.userId,
     });
 
     sendSuccess(res, interview, 'Interview successfully scheduled with calendar invite', 201);
