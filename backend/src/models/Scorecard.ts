@@ -17,6 +17,10 @@ export interface IScorecard extends Document {
   overallRecommendation: OverallRecommendation;
   summaryFeedback: string;
   status: 'DRAFT' | 'SUBMITTED';
+  weightedScore?: number;
+  isUnlocked?: boolean;
+  unlockedBy?: mongoose.Types.ObjectId;
+  unlockReason?: string;
   submittedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -45,6 +49,10 @@ const ScorecardSchema = new Schema<IScorecard>(
     },
     summaryFeedback: { type: String, required: true },
     status: { type: String, enum: ['DRAFT', 'SUBMITTED'], default: 'DRAFT', index: true },
+    weightedScore: { type: Number },
+    isUnlocked: { type: Boolean, default: false },
+    unlockedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    unlockReason: { type: String },
     submittedAt: { type: Date },
   },
   { timestamps: true }

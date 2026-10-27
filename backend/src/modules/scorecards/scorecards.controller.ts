@@ -35,3 +35,28 @@ export async function getInterviewScorecards(req: AuthRequest, res: Response, ne
     next(error);
   }
 }
+
+export async function unlockScorecard(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { reason } = req.body;
+    const scorecard = await scorecardService.unlockScorecard(
+      req.params.id,
+      req.userId!,
+      reason,
+      req.organizationId!
+    );
+
+    sendSuccess(res, scorecard, 'Scorecard unlocked successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getDebriefPacket(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const packet = await scorecardService.getDebriefPacket(req.params.interviewId);
+    sendSuccess(res, packet, 'Debrief packet retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+}

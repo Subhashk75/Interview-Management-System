@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { scorecardService } from '../modules/scorecards/scorecard.service.js';
 
 interface MockScorecard {
   interviewerId: string;
@@ -90,5 +91,102 @@ describe('Anti-Bias Scorecard Blinding Gate', () => {
     const adminResult = filterScorecardsWithAntiBias(samplePanelReviews, 'admin_01', 'ADMIN');
     expect(adminResult.isBlinded).toBe(false);
     expect(adminResult.scorecards[0].ratings).toBeDefined();
+  });
+});
+
+describe('Dynamic Weighted Score Calculations', () => {
+  it('should correctly calculate weighted score with differing competency weights', () => {
+    const roundCompetencies = [
+      { name: 'System Design', weight: 3 },
+      { name: 'Coding & Algorithms', weight: 2 },
+      { name: 'Communication', weight: 1 },
+    ];
+
+    const ratings = [
+      { name: 'System Design', rating: 5 },       // 5 * 3 = 15
+      { name: 'Coding & Algorithms', rating: 4 },  // 4 * 2 = 8
+      { name: 'Communication', rating: 3 },        // 3 * 1 = 3
+    ];
+    // Total weighted score = 26, Total weight = 6 -> 26 / 6 = 4.3333... -> 4.33
+
+    const weighted = scorecardService.calculateWeightedScore(ratings, roundCompetencies);
+    expect(weighted).toBe(4.33);
+  });
+
+  it('should fallback to weight 1 if competency is not specified in round or weight is 0/undefined', () => {
+    const roundCompetencies = [
+      { name: 'Problem Solving' }, // default weight 1
+    ];
+
+    const ratings = [
+      { name: 'Problem Solving', rating: 4 },
+      { name: 'Extra Feedback', rating: 2 }, // default weight 1
+    ];
+    // (4*1 + 2*1) / 2 = 3.0
+
+    const weighted = scorecardService.calculateWeightedScore(ratings, roundCompetencies);
+    expect(weighted).toBe(3.0);
+  });
+
+  it('should return 0 if no ratings are provided', () => {
+    const weighted = scorecardService.calculateWeightedScore([]);
+    expect(weighted).toBe(0);
+  });
+
+  it('should handle case insensitivity and whitespace in competency names', () => {
+    const roundCompetencies = [
+      { name: '  System Design  ', weight: 3 },
+    ];
+    const ratings = [
+      { name: 'system design', rating: 5 },
+    ];
+
+    const weighted = scorecardService.calculateWeightedScore(ratings, roundCompetencies);
+    expect(weighted).toBe(5);
+  });
+});
+
+describe('Debrief Consensus Determination Logic', () => {
+  function computeConsensus(
+    panelCount: number,
+    votes: { YES?: number; STRONG_YES?: number; NO?: number; STRONG_NO?: number; MIXED?: number }
+  ): string {
+    const submittedCount = (votes.YES || 0) + (votes.STRONG_YES || 0) + (votes.NO || 0) + (votes.STRONG_NO || 0) + (votes.MIXED || 0);
+    if (submittedCount < panelCount) {
+      return 'PENDING_EVALUATIONS';
+    }
+    const hireVotes = (votes.YES || 0) + (votes.STRONG_YES || 0);
+    const noHireVotes = (votes.NO || 0) + (votes.STRONG_NO || 0);
+    const mixedVotes = votes.MIXED || 0;
+
+    if (hireVotes > 0 && noHireVotes === 0 && mixedVotes === 0) {
+      return 'CONSENSUS_HIRE';
+    } else if (noHireVotes > 0 && hireVotes === 0 && mixedVotes === 0) {
+      return 'CONSENSUS_NO_HIRE';
+    }
+    return 'DIVERGENT_DEBRIEF_REQUIRED';
+  }
+
+  it('should return PENDING_EVALUATIONS if not all panel members submitted', () => {
+    const consensus = computeConsensus(3, { YES: 2 });
+    expect(consensus).toBe('PENDING_EVALUATIONS');
+  });
+
+  it('should return CONSENSUS_HIRE when all votes are YES or STRONG_YES', () => {
+    const consensus = computeConsensus(3, { YES: 2, STRONG_YES: 1 });
+    expect(consensus).toBe('CONSENSUS_HIRE');
+  });
+
+  it('should return CONSENSUS_NO_HIRE when all votes are NO or STRONG_NO', () => {
+    const consensus = computeConsensus(2, { NO: 1, STRONG_NO: 1 });
+    expect(consensus).toBe('CONSENSUS_NO_HIRE');
+  });
+
+  it('should return DIVERGENT_DEBRIEF_REQUIRED when panel votes conflict or include MIXED', () => {
+    const divergent = computeConsensus(2, { YES: 1, NO: 1 });
+    expect(divergent).toBe('DIVERGENT_DEBRIEF_REQUIRED');
+
+    const mixed = computeConsensus(2, { YES: 1, MIXED: 1 });
+    expect(mixed).toBe('DIVERGENT_DEBRIEF_REQUIRED');
   });
 });

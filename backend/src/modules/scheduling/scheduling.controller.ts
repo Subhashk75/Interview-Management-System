@@ -6,7 +6,7 @@ import { sendSuccess } from '../../utils/response.js';
 
 export async function generateSlots(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { interviewerIds, durationMinutes, startDate, endDate, bufferMinutes, timezone } = req.body;
+    const { interviewerIds, durationMinutes, startDate, endDate, bufferMinutes, timezone, enforceQuotas } = req.body;
     const slots = await schedulingService.generateAvailableSlots({
       organizationId: req.organizationId!,
       interviewerIds,
@@ -15,6 +15,7 @@ export async function generateSlots(req: AuthRequest, res: Response, next: NextF
       endDate,
       bufferMinutes: bufferMinutes !== undefined ? bufferMinutes : 15,
       timezone: timezone || 'UTC',
+      enforceQuotas: enforceQuotas !== undefined ? enforceQuotas : true,
     });
 
     sendSuccess(res, slots, 'Generated available interview slots');
@@ -107,6 +108,56 @@ export async function cancelInterview(req: AuthRequest, res: Response, next: Nex
     const { reason } = req.body;
     const interview = await schedulingService.cancelInterview(req.params.id, reason);
     sendSuccess(res, interview, 'Interview cancelled successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Creates a candidate self-scheduling link (Ashby / Greenhouse model).
+ */
+export async function createInvitation(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { candidateId, jobId, roundId, interviewerIds, durationMinutes, meetingType, expiryDays } = req.body;
+    const invitation = await schedulingService.createBookingInvitation({
+      organizationId: req.organizationId!,
+      candidateId,
+      jobId,
+      roundId,
+      interviewerIds,
+      durationMinutes,
+      meetingType,
+      expiryDays,
+    });
+
+    sendSuccess(res, invitation, 'Candidate self-scheduling link generated successfully', 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Public endpoint: Candidate views invitation details & real-time slots.
+ */
+export async function getPublicInvitation(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { token } = req.params;
+    const data = await schedulingService.getPublicInvitation(token);
+    sendSuccess(res, data, 'Invitation details with available slots');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Public endpoint: Candidate selects a slot and self-books.
+ */
+export async function bookPublicInvitation(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { token } = req.params;
+    const { startTime, endTime } = req.body;
+    const result = await schedulingService.bookPublicInvitation(token, { startTime, endTime });
+    sendSuccess(res, result, 'Interview successfully booked by candidate', 201);
   } catch (error) {
     next(error);
   }

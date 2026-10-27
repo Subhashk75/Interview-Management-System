@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Clock, Video, CheckCircle2, AlertTriangle, Sparkles, UserCheck, ShieldCheck } from 'lucide-react';
+import { X, Calendar, Clock, Video, CheckCircle2, AlertTriangle, Sparkles, UserCheck, ShieldCheck, Link as LinkIcon, Copy } from 'lucide-react';
 import api from '../services/api.ts';
 import { Candidate, Job, User, TimeSlot } from '../types/index.ts';
 
@@ -48,6 +48,8 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
 
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(false);
+  const [invitationLink, setInvitationLink] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -261,6 +263,50 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
       setErrorMessage(err.response?.data?.message || err.response?.data?.error?.message || err.message || 'Booking conflict or error occurred');
     } finally {
       setBookingLoading(false);
+    }
+  };
+
+  // Generate Candidate Self-Scheduling link (Ashby / Greenhouse model)
+  const handleGenerateInvitationLink = async () => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!selectedCandidateId) {
+      setErrorMessage('Please select a candidate first.');
+      return;
+    }
+    if (!selectedJobId) {
+      setErrorMessage('Please select a job opening first.');
+      return;
+    }
+    if (selectedInterviewerIds.length === 0) {
+      setErrorMessage('Please select at least one interviewer.');
+      return;
+    }
+
+    setGeneratingLink(true);
+
+    try {
+      const res: any = await api.post('/scheduling/invitations', {
+        candidateId: selectedCandidateId,
+        jobId: selectedJobId,
+        roundId: selectedRoundId || undefined,
+        interviewerIds: selectedInterviewerIds,
+        durationMinutes,
+        meetingType,
+      });
+
+      const token = res.data?.token || res.data?.data?.token;
+      if (token) {
+        const fullLink = `${window.location.origin}/?schedule_token=${token}`;
+        setInvitationLink(fullLink);
+        await navigator.clipboard.writeText(fullLink);
+        setSuccessMessage('📋 Candidate self-scheduling link generated and copied to clipboard! Share it with the candidate to let them choose their slot.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err.response?.data?.message || err.message || 'Failed to generate invitation link.');
+    } finally {
+      setGeneratingLink(false);
     }
   };
 
@@ -573,6 +619,16 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
             <span className="sm:hidden">Sends email invites with video link</span>
           </div>
           <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={handleGenerateInvitationLink}
+              disabled={generatingLink}
+              className="px-3.5 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow"
+              title="Generate a self-scheduling link for the candidate to choose their own slot"
+            >
+              <LinkIcon className="w-3.5 h-3.5" />
+              {generatingLink ? 'Generating...' : 'Candidate Self-Schedule Link'}
+            </button>
             <button
               type="button"
               onClick={onClose}

@@ -8,6 +8,7 @@ import { InterviewsPage } from './pages/InterviewsPage.tsx';
 import { ScorecardsPage } from './pages/ScorecardsPage.tsx';
 import { InterviewersPage } from './pages/InterviewersPage.tsx';
 import { SettingsPage } from './pages/SettingsPage.tsx';
+import { PublicSchedulePage } from './pages/PublicSchedulePage.tsx';
 import { ScheduleModal } from './components/ScheduleModal.tsx';
 import { ScorecardModal } from './components/ScorecardModal.tsx';
 import { Candidate, Interview } from './types/index.ts';
@@ -40,6 +41,13 @@ function AppContent() {
     setActiveInterview(interview);
     setIsScorecardOpen(true);
   };
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const publicToken = searchParams.get('schedule_token');
+
+  if (publicToken) {
+    return <PublicSchedulePage token={publicToken} />;
+  }
 
   return (
     <div className="flex bg-slate-950 min-h-screen text-slate-100">

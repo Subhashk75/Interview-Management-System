@@ -88,8 +88,30 @@ export interface Scorecard {
   overallRecommendation: 'STRONG_NO' | 'NO' | 'MIXED' | 'YES' | 'STRONG_YES';
   summaryFeedback: string;
   status: 'DRAFT' | 'SUBMITTED';
+  weightedScore?: number;
+  isUnlocked?: boolean;
+  unlockedBy?: string;
+  unlockReason?: string;
   submittedAt?: string;
   isBlinded?: boolean;
+}
+
+export interface DebriefPacket {
+  interview: Interview;
+  scorecards: Scorecard[];
+  metrics: {
+    totalAssignedPanelists: number;
+    submittedCount: number;
+    averageWeightedScore: number;
+    recommendationsCount: {
+      STRONG_NO: number;
+      NO: number;
+      MIXED: number;
+      YES: number;
+      STRONG_YES: number;
+    };
+    consensusStatus: 'CONSENSUS_HIRE' | 'CONSENSUS_NO_HIRE' | 'DIVERGENT_DEBRIEF_REQUIRED' | 'PENDING_EVALUATIONS';
+  };
 }
 
 export interface TimeSlot {
