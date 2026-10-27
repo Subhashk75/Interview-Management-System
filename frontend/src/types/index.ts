@@ -1,4 +1,5 @@
 export type UserRole = 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'CANDIDATE';
+export type CandidateStage = 'APPLIED' | 'SCREENING' | 'INTERVIEWING' | 'OFFER' | 'HIRED' | 'REJECTED';
 
 export interface User {
   _id: string;
