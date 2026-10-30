@@ -5,6 +5,7 @@ import jobRoutes from './modules/jobs/jobs.routes.js';
 import schedulingRoutes from './modules/scheduling/scheduling.routes.js';
 import scorecardRoutes from './modules/scorecards/scorecards.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
+import profileRoutes from './modules/profile/profile.routes.js';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/auth', authRoutes);
+router.use('/profile', profileRoutes);
 router.use('/candidates', candidateRoutes);
 router.use('/jobs', jobRoutes);
 router.use('/scheduling', schedulingRoutes);

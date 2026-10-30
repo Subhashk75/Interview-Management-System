@@ -4,6 +4,8 @@ import { AppError } from '../utils/appError.js';
 import { sendError } from '../utils/response.js';
 import { logger } from '../utils/logger.js';
 
+export { AppError };
+
 export function errorHandler(err: any, req: Request, res: Response, next: NextFunction): void {
   logger.error(`[${req.method}] ${req.url} - ${err.message}`, { stack: err.stack });
 

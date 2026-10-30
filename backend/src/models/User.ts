@@ -21,6 +21,23 @@ export interface IUser extends Document {
   otp?: string;
   otpExpiresAt?: Date;
   avatarUrl?: string;
+
+  // Profile Management Fields
+  phone?: string;
+  location?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bio?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  experienceYears?: number;
+  hiringSpecialization?: string;
+  assignedHiringTeams?: string[];
+  interviewSpecializations?: string[];
+  education?: string;
+  currentCompany?: string;
+
   comparePassword(candidatePassword: string): Promise<boolean>;
   createdAt: Date;
   updatedAt: Date;
@@ -50,6 +67,22 @@ const UserSchema = new Schema<IUser>(
     otp: { type: String, select: false },
     otpExpiresAt: { type: Date, select: false },
     avatarUrl: { type: String },
+
+    // Profile Management Fields
+    phone: { type: String, trim: true },
+    location: { type: String, trim: true },
+    dateOfBirth: { type: String, trim: true },
+    gender: { type: String, trim: true },
+    bio: { type: String, trim: true },
+    linkedinUrl: { type: String, trim: true },
+    portfolioUrl: { type: String, trim: true },
+    resumeUrl: { type: String, trim: true },
+    experienceYears: { type: Number, default: 0 },
+    hiringSpecialization: { type: String, trim: true },
+    assignedHiringTeams: [{ type: String }],
+    interviewSpecializations: [{ type: String }],
+    education: { type: String, trim: true },
+    currentCompany: { type: String, trim: true },
   },
   { timestamps: true }
 );

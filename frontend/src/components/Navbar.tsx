@@ -4,7 +4,11 @@ import { UserCheck, Shield, LogIn, LogOut, UserPlus, Users } from 'lucide-react'
 import { AuthModal } from './AuthModal.tsx';
 import { AdminHrModal } from './AdminHrModal.tsx';
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onNavigateTab?: (tab: string) => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onNavigateTab }) => {
   const { user, logout, switchDemoRole } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
@@ -73,22 +77,29 @@ export const Navbar: React.FC = () => {
           {/* User Status / Login / Signup Buttons */}
           {user ? (
             <div className="flex items-center space-x-3 pl-2 border-l border-slate-800">
-              <img
-                src={user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
-                alt="User avatar"
-                className="w-8 h-8 rounded-full border border-blue-500/40 object-cover"
-              />
-              <div className="text-left hidden md:block">
-                <p className="text-xs font-bold text-white leading-tight">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-blue-400 font-semibold">{user?.role}</span>
-                  {user?.isVerified && (
-                    <span className="text-[9px] text-emerald-400 font-mono bg-emerald-500/10 px-1 rounded">OTP OK</span>
-                  )}
+              <button
+                type="button"
+                onClick={() => onNavigateTab && onNavigateTab('profile')}
+                title="View My Profile"
+                className="flex items-center space-x-2.5 p-1 -m-1 rounded-xl hover:bg-slate-800/70 transition text-left group"
+              >
+                <img
+                  src={user?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                  alt="User avatar"
+                  className="w-8 h-8 rounded-full border border-blue-500/40 object-cover group-hover:border-blue-400 transition"
+                />
+                <div className="text-left hidden md:block">
+                  <p className="text-xs font-bold text-white group-hover:text-blue-300 transition leading-tight">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-blue-400 font-semibold">{user?.role}</span>
+                    {user?.isVerified && (
+                      <span className="text-[9px] text-emerald-400 font-mono bg-emerald-500/10 px-1 rounded">OTP OK</span>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </button>
 
               <button
                 onClick={logout}

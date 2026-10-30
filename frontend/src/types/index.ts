@@ -15,6 +15,44 @@ export interface User {
   isActive?: boolean;
   isVerified?: boolean;
   avatarUrl?: string;
+
+  // Role-Based Profile Details
+  phone?: string;
+  location?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bio?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  resumeUrl?: string;
+  experienceYears?: number;
+  hiringSpecialization?: string;
+  assignedHiringTeams?: string[];
+  interviewSpecializations?: string[];
+  education?: string;
+  currentCompany?: string;
+  organizationId?: {
+    _id: string;
+    name: string;
+    domain?: string;
+  };
+}
+
+export interface ProfileRequirement {
+  key: string;
+  label: string;
+  mandatory: boolean;
+  isCompleted: boolean;
+}
+
+export interface ProfileCompletionStats {
+  percentage: number;
+  totalFields: number;
+  completedFields: number;
+  missingMandatoryFields: string[];
+  missingOptionalFields: string[];
+  requirements: ProfileRequirement[];
+  isFullyComplete: boolean;
 }
 
 export interface Candidate {

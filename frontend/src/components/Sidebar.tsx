@@ -5,7 +5,7 @@ import {
   Calendar,
   ClipboardCheck,
   UserCheck,
-  Settings,
+  User as UserIcon,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
@@ -22,7 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
     { id: 'interviews', label: 'Interviews & Slots', icon: Calendar },
     { id: 'scorecards', label: 'Evaluations & Scorecards', icon: ClipboardCheck },
     { id: 'interviewers', label: 'Interviewer Pool', icon: UserCheck },
-    { id: 'settings', label: 'Integrations & Settings', icon: Settings },
+    { id: 'profile', label: 'My Profile', icon: UserIcon },
   ];
 
   return (

@@ -8,6 +8,7 @@ import { InterviewsPage } from './pages/InterviewsPage.tsx';
 import { ScorecardsPage } from './pages/ScorecardsPage.tsx';
 import { InterviewersPage } from './pages/InterviewersPage.tsx';
 import { SettingsPage } from './pages/SettingsPage.tsx';
+import { ProfilePage } from './pages/ProfilePage.tsx';
 import { PublicSchedulePage } from './pages/PublicSchedulePage.tsx';
 import { ScheduleModal } from './components/ScheduleModal.tsx';
 import { ScorecardModal } from './components/ScorecardModal.tsx';
@@ -54,7 +55,7 @@ function AppContent() {
       <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <Navbar />
+        <Navbar onNavigateTab={setCurrentTab} />
 
         <main className="flex-1 p-8 overflow-y-auto">
           {currentTab === 'dashboard' && (
@@ -83,6 +84,8 @@ function AppContent() {
           )}
 
           {currentTab === 'interviewers' && <InterviewersPage key={refreshKey} />}
+
+          {currentTab === 'profile' && <ProfilePage key={refreshKey} />}
 
           {currentTab === 'settings' && <SettingsPage />}
         </main>

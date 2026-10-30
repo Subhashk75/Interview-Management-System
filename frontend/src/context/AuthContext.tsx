@@ -17,6 +17,8 @@ interface AuthContextType {
   resendOtp: (email: string) => Promise<void>;
   logout: () => void;
   switchDemoRole: (role: 'ADMIN' | 'RECRUITER' | 'INTERVIEWER') => Promise<void>;
+  updateUserProfile: (data: Partial<User>) => Promise<any>;
+  refreshUser: () => Promise<void>;
   loading: boolean;
 }
 
@@ -90,6 +92,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await api.post('/auth/resend-otp', { email });
   };
 
+  const refreshUser = async () => {
+    try {
+      const res: any = await api.get('/profile/me');
+      if (res.data?.user) {
+        setUser(res.data.user);
+      } else if (res.data) {
+        setUser(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to refresh user:', err);
+    }
+  };
+
+  const updateUserProfile = async (data: Partial<User>) => {
+    const res: any = await api.put('/profile/me', data);
+    if (res.data?.user) {
+      setUser(res.data.user);
+    }
+    return res.data;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
@@ -114,7 +137,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, register, verifyOtp, resendOtp, logout, switchDemoRole, loading }}
+      value={{
+        user,
+        token,
+        login,
+        register,
+        verifyOtp,
+        resendOtp,
+        logout,
+        switchDemoRole,
+        updateUserProfile,
+        refreshUser,
+        loading,
+      }}
     >
       {children}
     </AuthContext.Provider>
