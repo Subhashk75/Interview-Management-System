@@ -101,9 +101,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     organizationName?: string;
   }) => {
     const res: any = await api.post('/auth/register', data);
+    const payload = res.data || res;
+    if (payload?.token) {
+      localStorage.setItem('token', payload.token);
+      setToken(payload.token);
+      setUser(payload.user);
+      setMustChangePassword(false);
+    }
     return {
-      requireOtp: true,
-      email: res.data?.email || data.email,
+      requireOtp: Boolean(payload?.requireOtp),
+      email: payload?.email || data.email,
     };
   };
 

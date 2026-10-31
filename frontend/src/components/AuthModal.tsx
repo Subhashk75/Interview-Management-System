@@ -246,7 +246,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   }}
                   className="text-blue-400 hover:underline font-semibold"
                 >
-                  Sign Up with Email OTP
+                  Create a Candidate Account
                 </button>
               </div>
             </form>
@@ -329,7 +329,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={loading}
                 className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-blue-600/20 disabled:opacity-50"
               >
-                {loading ? 'Creating Account...' : 'Continue to Email OTP Verification'}
+                {loading ? 'Creating Account...' : 'Create Candidate Account'}
               </button>
 
               <div className="pt-2 text-center text-xs text-slate-400">
