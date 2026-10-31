@@ -94,6 +94,7 @@ export const ProfilePage: React.FC = () => {
 
   // Load Profile from API
   const loadProfile = async () => {
+    if (!user) return;
     setLoading(true);
     setErrorMessage(null);
     try {

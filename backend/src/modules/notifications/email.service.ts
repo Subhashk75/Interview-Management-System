@@ -71,10 +71,12 @@ class EmailService {
       </div>
     `;
 
+    const sender = process.env.SMTP_FROM || process.env.SMTP_USER || '"Interview Management Platform" <no-reply@ims.company>';
+
     try {
       if (this.transporter) {
         await this.transporter.sendMail({
-          from: '"Interview Management Platform" <no-reply@ims.company>',
+          from: sender,
           to: email,
           subject,
           html,
@@ -245,12 +247,14 @@ class EmailService {
     let interviewersSent = false;
     let hrSent = false;
 
+    const sender = process.env.SMTP_FROM || process.env.SMTP_USER || '"Acme Talent Acquisition" <interviews@acme.com>';
+
     // Send Candidate email
     try {
       if (candidate.email) {
         if (this.transporter) {
           await this.transporter.sendMail({
-            from: '"Acme Talent Acquisition" <interviews@acme.com>',
+            from: sender,
             to: candidate.email,
             subject: candidateSubject,
             html: candidateHtml,
@@ -277,7 +281,7 @@ class EmailService {
         if (inv.email) {
           if (this.transporter) {
             await this.transporter.sendMail({
-              from: '"Acme Talent Acquisition" <interviews@acme.com>',
+              from: sender,
               to: inv.email,
               subject: interviewerSubject,
               html: interviewerHtml,
@@ -304,7 +308,7 @@ class EmailService {
       if (hrEmail) {
         if (this.transporter) {
           await this.transporter.sendMail({
-            from: '"Acme Talent Platform" <system@acme.com>',
+            from: sender,
             to: hrEmail,
             subject: hrSubject,
             html: hrHtml,

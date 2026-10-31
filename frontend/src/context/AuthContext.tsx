@@ -40,8 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(res.data);
           setMustChangePassword(Boolean(res.data?.mustChangePassword));
         } catch (err) {
-          console.error('Session restoration failed:', err);
-          logout();
+          console.warn('Session restoration failed, re-initializing dev session:', err);
+          localStorage.removeItem('token');
+          setToken(null);
+          await switchDemoRole('RECRUITER');
         }
       } else {
         // Auto-login as default Recruiter in development for initial seamless demo
@@ -63,10 +65,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setMustChangePassword(needsChange);
       return { requirePasswordChange: needsChange };
     } catch (err: any) {
-      if (err.response?.status === 403 && err.response?.data?.data?.requireOtp) {
+      const isUnverified =
+        (err.response?.status === 403 && err.response?.data?.data?.requireOtp) ||
+        (err.status === 403 && (err.data?.data?.requireOtp || err.code === 'ACCOUNT_NOT_VERIFIED'));
+      if (isUnverified) {
         return {
           requireOtp: true,
-          email: err.response.data.data.email || email,
+          email: err.response?.data?.data?.email || err.data?.data?.email || email,
         };
       }
       throw err;
