@@ -45,10 +45,27 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
       throw new AppError('Invalid email or password.', 401, 'INVALID_CREDENTIALS');
     }
 
-    // Auto-verify user on successful password authentication
+    // Check email verification status
     if (!user.isVerified) {
-      user.isVerified = true;
+      const newOtp = generateSixDigitOtp();
+      user.otp = newOtp;
+      user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
       await user.save();
+
+      await emailService.sendOtpEmail(user.email, user.firstName, newOtp);
+
+      res.status(403).json({
+        success: false,
+        error: {
+          code: 'ACCOUNT_NOT_VERIFIED',
+          message: 'Account not verified. A 6-digit verification code has been dispatched to your email.',
+        },
+        data: {
+          requireOtp: true,
+          email: user.email,
+        },
+      });
+      return;
     }
 
     const token = jwt.sign(
@@ -100,33 +117,37 @@ export async function register(req: Request, res: Response, next: NextFunction):
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      // If user existed from previous unverified attempt, update credentials and activate immediately
       if (!existingUser.isVerified) {
-        existingUser.password = password;
-        existingUser.isVerified = true;
-        existingUser.firstName = firstName.trim();
-        existingUser.lastName = lastName.trim();
-        existingUser.otp = undefined;
-        existingUser.otpExpiresAt = undefined;
+        // User already started registration but hasn't completed OTP verification.
+        // Update password if new one provided and dispatch fresh OTP!
+        const newOtp = generateSixDigitOtp();
+        existingUser.otp = newOtp;
+        existingUser.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        if (password) {
+          existingUser.password = password;
+        }
         await existingUser.save();
+        await emailService.sendOtpEmail(existingUser.email, existingUser.firstName, newOtp);
 
-        const token = jwt.sign(
-          { userId: existingUser._id, role: existingUser.role, organizationId: existingUser.organizationId },
-          ENV.JWT_SECRET,
-          { expiresIn: '1d' }
+        sendSuccess(
+          res,
+          {
+            requireOtp: true,
+            email: existingUser.email,
+            message: 'A fresh 6-digit verification code has been dispatched to your email.',
+          },
+          'Registration resumed. Please enter the verification code sent to your email.',
+          200
         );
-        const userObj = existingUser.toObject();
-        delete userObj.password;
-        delete userObj.otp;
-        delete userObj.otpExpiresAt;
-
-        sendSuccess(res, { token, user: userObj }, 'Candidate account registered and activated successfully!', 200);
         return;
       }
-      throw new AppError('An account with this email already exists. Please sign in.', 409, 'USER_EXISTS');
+      throw new AppError('User with this email already exists. Please sign in.', 409, 'USER_EXISTS');
     }
 
-    // Rule: Public registration is strictly for Candidates and activated immediately
+    const otp = generateSixDigitOtp();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Rule: Public registration is strictly for Candidates!
     const user = await User.create({
       organizationId: org._id,
       firstName: firstName.trim(),
@@ -134,8 +155,10 @@ export async function register(req: Request, res: Response, next: NextFunction):
       email: email.toLowerCase().trim(),
       password,
       role: 'CANDIDATE',
-      isVerified: true,
+      isVerified: false,
       mustChangePassword: false,
+      otp,
+      otpExpiresAt,
     });
 
     // Create corresponding Candidate document in pipeline if not already present
@@ -153,24 +176,17 @@ export async function register(req: Request, res: Response, next: NextFunction):
       });
     }
 
-    const token = jwt.sign(
-      { userId: user._id, role: user.role, organizationId: user.organizationId },
-      ENV.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-
-    const userObj = user.toObject();
-    delete userObj.password;
-    delete userObj.otp;
-    delete userObj.otpExpiresAt;
+    // Send OTP verification email
+    await emailService.sendOtpEmail(user.email, user.firstName, otp);
 
     sendSuccess(
       res,
       {
-        token,
-        user: userObj,
+        requireOtp: true,
+        email: user.email,
+        message: 'Registration initiated. Please enter the 6-digit OTP sent to your email to verify your candidate account.',
       },
-      'Candidate account registered and signed in successfully',
+      'Verification code sent to email',
       201
     );
   } catch (error) {

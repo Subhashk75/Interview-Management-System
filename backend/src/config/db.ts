@@ -14,14 +14,10 @@ let mongoMemoryServer: any = null;
 export async function connectDB(): Promise<void> {
   mongoose.set('strictQuery', true);
 
-  try {
-    // Try standard configured URI first (timeout quickly if unavailable)
-    await mongoose.connect(ENV.MONGODB_URI, {
-      serverSelectionTimeoutMS: 2000,
-    });
-    logger.info(`✅ Connected to MongoDB: ${ENV.MONGODB_URI}`);
-  } catch (error: any) {
-    logger.warn(`⚠️ Local/configured MongoDB unreachable (${error.message}). Initializing In-Memory MongoDB Engine...`);
+  const useMemory = process.env.USE_IN_MEMORY_DB === 'true' || !ENV.MONGODB_URI;
+
+  if (useMemory) {
+    logger.info('📦 USE_IN_MEMORY_DB set to true. Initializing In-Memory MongoDB Engine...');
     try {
       const { MongoMemoryServer } = await import('mongodb-memory-server');
       mongoMemoryServer = await MongoMemoryServer.create();
@@ -29,7 +25,27 @@ export async function connectDB(): Promise<void> {
       await mongoose.connect(memoryUri);
       logger.info(`✅ In-Memory MongoDB Server initialized and connected at: ${memoryUri}`);
     } catch (memErr: any) {
-      logger.error('Failed to initialize in-memory Mongo server:', memErr);
+      logger.error('Failed to initialize in-memory Mongo server:', memErr.message);
+    }
+  } else {
+    try {
+      // Try standard configured URI first (timeout quickly if unavailable)
+      await mongoose.connect(ENV.MONGODB_URI, {
+        serverSelectionTimeoutMS: 2500,
+        connectTimeoutMS: 2500,
+      });
+      logger.info(`✅ Connected to MongoDB: ${ENV.MONGODB_URI}`);
+    } catch (error: any) {
+      logger.warn(`⚠️ Configured MongoDB unreachable (${error.message}). Initializing In-Memory MongoDB Engine...`);
+      try {
+        const { MongoMemoryServer } = await import('mongodb-memory-server');
+        mongoMemoryServer = await MongoMemoryServer.create();
+        const memoryUri = mongoMemoryServer.getUri();
+        await mongoose.connect(memoryUri);
+        logger.info(`✅ In-Memory MongoDB Server initialized and connected at: ${memoryUri}`);
+      } catch (memErr: any) {
+        logger.error('Failed to initialize in-memory Mongo server:', memErr.message);
+      }
     }
   }
 
@@ -41,7 +57,7 @@ export async function connectDB(): Promise<void> {
       await autoSeedData();
     }
   } catch (seedErr: any) {
-    logger.error('Error during auto-seed check:', seedErr);
+    logger.error('Error during auto-seed check:', seedErr.message);
   }
 }
 

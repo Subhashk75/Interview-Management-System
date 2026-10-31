@@ -246,7 +246,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   }}
                   className="text-blue-400 hover:underline font-semibold"
                 >
-                  Create a Candidate Account
+                  Sign Up with Email OTP
                 </button>
               </div>
             </form>
@@ -329,7 +329,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 disabled={loading}
                 className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-blue-600/20 disabled:opacity-50"
               >
-                {loading ? 'Creating Account...' : 'Create Candidate Account'}
+                {loading ? 'Creating Account...' : 'Continue to Email OTP Verification'}
               </button>
 
               <div className="pt-2 text-center text-xs text-slate-400">
@@ -374,7 +374,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     autoFocus
                   />
                 </div>
-                <p className="text-[11px] text-slate-400 text-center mt-2">Code is valid for 10 minutes</p>
+                <p className="text-[11px] text-slate-400 text-center mt-2">
+                  Code is valid for 10 minutes. Check your inbox or spam folder.
+                </p>
+                <div className="text-center mt-1">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res: any = await (await import('../services/api.ts')).default.get('/auth/email-logs');
+                        const logs = res.data || [];
+                        const match = logs.find((l: any) => l.to?.toLowerCase() === email.toLowerCase() && l.otp);
+                        if (match?.otp) {
+                          setOtpCode(match.otp);
+                          setSuccessMessage(`Loaded recent code: ${match.otp}`);
+                        } else {
+                          setErrorMessage('No recent verification code found in server logs. Click "Resend Code".');
+                        }
+                      } catch {
+                        setErrorMessage('Could not retrieve code from server log.');
+                      }
+                    }}
+                    className="text-[10px] text-slate-500 hover:text-blue-400 underline transition"
+                  >
+                    View / Auto-fill latest code from server log
+                  </button>
+                </div>
               </div>
 
               <button

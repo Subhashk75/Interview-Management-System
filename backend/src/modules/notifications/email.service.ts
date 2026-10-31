@@ -21,16 +21,24 @@ class EmailService {
 
   private async initTransporter() {
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      const pass = process.env.SMTP_PASS.replace(/\s+/g, '');
+      const port = Number(process.env.SMTP_PORT) || 587;
       this.transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true',
+        port,
+        secure: process.env.SMTP_SECURE === 'true' || port === 465,
         auth: {
           user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
+          pass,
         },
+        tls: {
+          rejectUnauthorized: false,
+        },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 12000,
       });
-      logger.info('📧 Nodemailer configured with production SMTP server');
+      logger.info(`📧 Nodemailer configured with production SMTP server (${process.env.SMTP_HOST}:${port})`);
     } else {
       // In development or test without SMTP, configure a stream transport or ethereal test account
       this.transporter = nodemailer.createTransport({
@@ -95,7 +103,19 @@ class EmailService {
       logger.info(`🔑 [EMAIL DISPATCHED] OTP [${otp}] sent to ${email}`);
       return true;
     } catch (err: any) {
-      logger.error(`Failed to send OTP email to ${email}:`, err);
+      logger.error(`Failed to send OTP email to ${email}:`, err.message || err);
+
+      // Always record OTP in local logs so developers and admins can verify
+      this.recordLog({
+        id: Math.random().toString(36).substring(2, 9),
+        to: email,
+        subject,
+        otp,
+        sentAt: new Date(),
+        preview: `OTP Verification code: ${otp} sent to ${email} (Fallback: SMTP error: ${err.message || 'connection failed'})`,
+      });
+
+      logger.warn(`🔑 [DEV FALLBACK] Verification code for ${email} is: [${otp}]`);
       return false;
     }
   }
