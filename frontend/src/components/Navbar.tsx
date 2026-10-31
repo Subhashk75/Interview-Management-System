@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
-import { UserCheck, Shield, LogIn, LogOut, UserPlus, Users } from 'lucide-react';
+import { Shield, LogIn, LogOut, UserPlus, Users } from 'lucide-react';
 import { AuthModal } from './AuthModal.tsx';
 import { AdminHrModal } from './AdminHrModal.tsx';
 
@@ -9,7 +9,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigateTab }) => {
-  const { user, logout, switchDemoRole } = useAuth();
+  const { user, logout } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
   const [adminHrModalOpen, setAdminHrModalOpen] = useState(false);
@@ -22,13 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateTab }) => {
   return (
     <>
       <header className="h-16 bg-slate-900/80 backdrop-blur border-b border-slate-800 px-6 flex items-center justify-between sticky top-0 z-30">
-        <div className="flex items-center space-x-3">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
-            Acme Technologies Global
-          </span>
-          <span className="text-xs text-slate-500 hidden sm:inline">•</span>
-          <span className="text-xs text-slate-400 hidden sm:inline">Environment: Production Sandbox</span>
-        </div>
+        <div className="flex items-center space-x-3" />
 
         {/* Right Section */}
         <div className="flex items-center space-x-3">
@@ -42,53 +36,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateTab }) => {
               <span>Manage HR & Team</span>
             </button>
           )}
-
-          {/* Quick Demo Switcher */}
-          <div className="hidden lg:flex items-center space-x-1 bg-slate-800/80 p-1 rounded-lg border border-slate-700">
-            <span className="text-[11px] text-slate-400 px-1.5 flex items-center gap-1">
-              <UserCheck className="w-3 h-3 text-blue-400" /> Switch:
-            </span>
-            <button
-              onClick={() => switchDemoRole('RECRUITER')}
-              className={`px-2 py-0.5 text-xs font-medium rounded transition ${
-                user?.role === 'RECRUITER' ? 'bg-blue-600 text-white shadow' : 'text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              HR (Alex)
-            </button>
-            <button
-              onClick={() => switchDemoRole('ADMIN')}
-              className={`px-2 py-0.5 text-xs font-medium rounded transition ${
-                user?.role === 'ADMIN' ? 'bg-blue-600 text-white shadow' : 'text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Admin (Sarah)
-            </button>
-            <button
-              onClick={() => switchDemoRole('INTERVIEWER')}
-              className={`px-2 py-0.5 text-xs font-medium rounded transition ${
-                user?.role === 'INTERVIEWER' ? 'bg-blue-600 text-white shadow' : 'text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Interviewer (David)
-            </button>
-            <button
-              onClick={() => switchDemoRole('HIRING_MANAGER')}
-              className={`px-2 py-0.5 text-xs font-medium rounded transition ${
-                user?.role === 'HIRING_MANAGER' ? 'bg-blue-600 text-white shadow' : 'text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Manager (Marcus)
-            </button>
-            <button
-              onClick={() => switchDemoRole('CANDIDATE')}
-              className={`px-2 py-0.5 text-xs font-medium rounded transition ${
-                user?.role === 'CANDIDATE' ? 'bg-blue-600 text-white shadow' : 'text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              Candidate (Emily)
-            </button>
-          </div>
 
           {/* User Status / Login / Signup Buttons */}
           {user ? (
