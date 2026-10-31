@@ -29,10 +29,32 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
     req.userRole = decoded.role;
     req.organizationId = decoded.organizationId;
 
-    // Optional user object load
+    // Load user object from DB
     const user = await User.findById(decoded.userId).select('-password');
-    if (user) {
-      req.user = user;
+    if (!user) {
+      throw new AppError('User not found or session invalid.', 401, 'USER_NOT_FOUND');
+    }
+    if (!user.isActive) {
+      throw new AppError('Account is deactivated. Please contact your administrator.', 403, 'ACCOUNT_DEACTIVATED');
+    }
+
+    req.user = user;
+    req.userRole = user.role;
+
+    // Mandatory first login password change enforcement
+    if (user.mustChangePassword) {
+      const isAllowedEndpoint =
+        req.originalUrl.includes('/auth/change-password') ||
+        req.originalUrl.includes('/auth/me') ||
+        req.originalUrl.includes('/auth/logout');
+
+      if (!isAllowedEndpoint) {
+        throw new AppError(
+          'Password change required. You must change your temporary password before accessing platform features.',
+          403,
+          'PASSWORD_CHANGE_REQUIRED'
+        );
+      }
     }
 
     next();
@@ -42,8 +64,14 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
 }
 
 export function authorize(...allowedRoles: string[]) {
+  const expandedRoles = new Set(allowedRoles);
+  if (allowedRoles.includes('HR')) expandedRoles.add('RECRUITER');
+  if (allowedRoles.includes('RECRUITER')) expandedRoles.add('HR');
+  if (allowedRoles.includes('MANAGER')) expandedRoles.add('HIRING_MANAGER');
+  if (allowedRoles.includes('HIRING_MANAGER')) expandedRoles.add('MANAGER');
+
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
-    if (!req.userRole || !allowedRoles.includes(req.userRole)) {
+    if (!req.userRole || !expandedRoles.has(req.userRole)) {
       next(new AppError('Forbidden: You do not have permission to perform this action.', 403, 'FORBIDDEN'));
       return;
     }

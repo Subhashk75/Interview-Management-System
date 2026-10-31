@@ -129,9 +129,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
           <div className="space-y-3">
             {[
-              { label: 'Recruiters & Talent Partners', count: userDistribution.RECRUITER || 0, color: 'bg-blue-500' },
+              { label: 'HR & Talent Partners', count: (userDistribution.HR || 0) + (userDistribution.RECRUITER || 0), color: 'bg-blue-500' },
               { label: 'Technical Interviewers', count: userDistribution.INTERVIEWER || 0, color: 'bg-emerald-500' },
-              { label: 'Hiring Managers', count: userDistribution.HIRING_MANAGER || 0, color: 'bg-amber-500' },
+              { label: 'Hiring Managers', count: (userDistribution.MANAGER || 0) + (userDistribution.HIRING_MANAGER || 0), color: 'bg-amber-500' },
               { label: 'System Administrators', count: userDistribution.ADMIN || 1, color: 'bg-purple-500' },
             ].map((r, i) => (
               <div key={i} className="p-3 bg-slate-800/40 rounded-xl space-y-1.5">

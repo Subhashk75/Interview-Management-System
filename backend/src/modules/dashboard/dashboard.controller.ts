@@ -18,13 +18,13 @@ export async function getDashboardStats(req: AuthRequest, res: Response, next: N
       result = await dashboardService.getAdminDashboard(orgId);
     } else if (targetRole === 'INTERVIEWER') {
       result = await dashboardService.getInterviewerDashboard(orgId, userId);
-    } else if (targetRole === 'HIRING_MANAGER') {
+    } else if (targetRole === 'HIRING_MANAGER' || targetRole === 'MANAGER') {
       result = await dashboardService.getHiringManagerDashboard(orgId, userId);
     } else if (targetRole === 'CANDIDATE') {
       const user = await User.findById(userId);
       result = await dashboardService.getCandidateDashboard(orgId, user?.email || '');
     } else {
-      // Default to RECRUITER
+      // Default to HR / RECRUITER
       result = await dashboardService.getRecruiterDashboard(orgId);
     }
 

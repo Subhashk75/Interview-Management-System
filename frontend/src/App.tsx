@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AuthProvider } from './context/AuthContext.tsx';
+import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { Sidebar } from './components/Sidebar.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { DashboardPage } from './pages/DashboardPage.tsx';
@@ -12,9 +12,11 @@ import { ProfilePage } from './pages/ProfilePage.tsx';
 import { PublicSchedulePage } from './pages/PublicSchedulePage.tsx';
 import { ScheduleModal } from './components/ScheduleModal.tsx';
 import { ScorecardModal } from './components/ScorecardModal.tsx';
+import { ChangePasswordModal } from './components/ChangePasswordModal.tsx';
 import { Candidate, Interview } from './types/index.ts';
 
 function AppContent() {
+  const { mustChangePassword } = useAuth();
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [refreshKey, setRefreshKey] = useState(0);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -114,6 +116,9 @@ function AppContent() {
           triggerRefresh();
         }}
       />
+
+      {/* Mandatory First-Time Password Change Lock Screen */}
+      <ChangePasswordModal isOpen={mustChangePassword} />
     </div>
   );
 }

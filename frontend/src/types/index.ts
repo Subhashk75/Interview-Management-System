@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'CANDIDATE';
+export type UserRole = 'ADMIN' | 'RECRUITER' | 'HR' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'MANAGER' | 'CANDIDATE';
 export type CandidateStage = 'APPLIED' | 'SCREENING' | 'INTERVIEWING' | 'OFFER' | 'HIRED' | 'REJECTED';
 
 export interface User {
@@ -15,6 +15,8 @@ export interface User {
   isActive?: boolean;
   isVerified?: boolean;
   avatarUrl?: string;
+  mustChangePassword?: boolean;
+  createdBy?: string;
 
   // Role-Based Profile Details
   phone?: string;

@@ -31,9 +31,9 @@ export class DashboardService {
       recentAuditLogs,
     ] = await Promise.all([
       User.countDocuments({ organizationId }),
-      User.countDocuments({ organizationId, role: 'RECRUITER' }),
+      User.countDocuments({ organizationId, role: { $in: ['RECRUITER', 'HR'] } }),
       User.countDocuments({ organizationId, role: 'INTERVIEWER' }),
-      User.countDocuments({ organizationId, role: 'HIRING_MANAGER' }),
+      User.countDocuments({ organizationId, role: { $in: ['HIRING_MANAGER', 'MANAGER'] } }),
       Candidate.countDocuments({ organizationId, isArchived: false }),
       Job.countDocuments({ organizationId, status: 'OPEN' }),
       Interview.countDocuments({ organizationId }),

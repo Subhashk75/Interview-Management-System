@@ -5,7 +5,8 @@ import { User } from '../types/index.ts';
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password?: string) => Promise<{ requireOtp?: boolean; email?: string } | void>;
+  mustChangePassword: boolean;
+  login: (email: string, password?: string) => Promise<{ requireOtp?: boolean; email?: string; requirePasswordChange?: boolean } | void>;
   register: (data: {
     firstName: string;
     lastName: string;
@@ -15,8 +16,9 @@ interface AuthContextType {
   }) => Promise<{ requireOtp: boolean; email: string }>;
   verifyOtp: (email: string, otp: string) => Promise<void>;
   resendOtp: (email: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
-  switchDemoRole: (role: 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'CANDIDATE') => Promise<void>;
+  switchDemoRole: (role: 'ADMIN' | 'RECRUITER' | 'HR' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'MANAGER' | 'CANDIDATE') => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<any>;
   refreshUser: () => Promise<void>;
   loading: boolean;
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const res: any = await api.get('/auth/me');
           setUser(res.data);
+          setMustChangePassword(Boolean(res.data?.mustChangePassword));
         } catch (err) {
           console.error('Session restoration failed:', err);
           logout();
@@ -51,10 +55,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password = 'Password123!') => {
     try {
       const res: any = await api.post('/auth/login', { email, password });
-      const { token: newToken, user: userData } = res.data;
+      const { token: newToken, user: userData, requirePasswordChange } = res.data;
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userData);
+      const needsChange = Boolean(requirePasswordChange || userData?.mustChangePassword);
+      setMustChangePassword(needsChange);
+      return { requirePasswordChange: needsChange };
     } catch (err: any) {
       if (err.response?.status === 403 && err.response?.data?.data?.requireOtp) {
         return {
@@ -64,6 +71,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       throw err;
     }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    const res: any = await api.post('/auth/change-password', {
+      currentPassword,
+      newPassword,
+    });
+    if (res.data?.token) {
+      localStorage.setItem('token', res.data.token);
+      setToken(res.data.token);
+    }
+    if (res.data?.user) {
+      setUser(res.data.user);
+    }
+    setMustChangePassword(false);
   };
 
   const register = async (data: {
@@ -119,14 +141,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const switchDemoRole = async (role: 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'CANDIDATE') => {
+  const switchDemoRole = async (role: 'ADMIN' | 'RECRUITER' | 'HR' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'MANAGER' | 'CANDIDATE') => {
     setLoading(true);
     try {
-      const emailMap = {
+      const emailMap: Record<string, string> = {
         ADMIN: 'admin@acme.com',
         RECRUITER: 'recruiter@acme.com',
+        HR: 'recruiter@acme.com',
         INTERVIEWER: 'david.kim@acme.com',
         HIRING_MANAGER: 'marcus.vance@acme.com',
+        MANAGER: 'marcus.vance@acme.com',
         CANDIDATE: 'emily.zhang@example.com',
       };
       await login(emailMap[role], 'Password123!');
@@ -142,10 +166,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         token,
+        mustChangePassword,
         login,
         register,
         verifyOtp,
         resendOtp,
+        changePassword,
         logout,
         switchDemoRole,
         updateUserProfile,

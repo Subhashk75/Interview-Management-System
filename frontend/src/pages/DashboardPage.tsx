@@ -90,6 +90,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         />
       );
 
+    case 'MANAGER':
     case 'HIRING_MANAGER':
       return (
         <HiringManagerDashboardView
@@ -107,6 +108,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         />
       );
 
+    case 'HR':
     case 'RECRUITER':
     default:
       return (

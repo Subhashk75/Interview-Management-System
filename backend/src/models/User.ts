@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-export type UserRole = 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'CANDIDATE';
+export type UserRole = 'ADMIN' | 'HR' | 'RECRUITER' | 'INTERVIEWER' | 'MANAGER' | 'HIRING_MANAGER' | 'CANDIDATE';
 
 export interface IUser extends Document {
   organizationId: mongoose.Types.ObjectId;
@@ -18,6 +18,8 @@ export interface IUser extends Document {
   dailyInterviewLimit: number;
   isActive: boolean;
   isVerified: boolean;
+  mustChangePassword: boolean;
+  createdBy?: mongoose.Types.ObjectId;
   otp?: string;
   otpExpiresAt?: Date;
   avatarUrl?: string;
@@ -52,7 +54,7 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, select: false },
     role: {
       type: String,
-      enum: ['ADMIN', 'RECRUITER', 'INTERVIEWER', 'HIRING_MANAGER', 'CANDIDATE'],
+      enum: ['ADMIN', 'HR', 'RECRUITER', 'INTERVIEWER', 'MANAGER', 'HIRING_MANAGER', 'CANDIDATE'],
       default: 'INTERVIEWER',
       index: true,
     },
@@ -64,6 +66,8 @@ const UserSchema = new Schema<IUser>(
     dailyInterviewLimit: { type: Number, default: 2 },
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
+    mustChangePassword: { type: Boolean, default: false },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     otp: { type: String, select: false },
     otpExpiresAt: { type: Date, select: false },
     avatarUrl: { type: String },
