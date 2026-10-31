@@ -101,6 +101,19 @@ export class ProfileService {
           { key: 'linkedinUrl', label: 'LinkedIn Profile', mandatory: false },
         ];
 
+      case 'HIRING_MANAGER':
+        return [
+          { key: 'firstName', label: 'First Name', mandatory: true },
+          { key: 'lastName', label: 'Last Name', mandatory: true },
+          { key: 'email', label: 'Email Address', mandatory: true },
+          { key: 'title', label: 'Job Title / Designation', mandatory: true },
+          { key: 'department', label: 'Department / Business Unit', mandatory: true },
+          { key: 'phone', label: 'Contact Phone Number', mandatory: false },
+          { key: 'location', label: 'Location', mandatory: false },
+          { key: 'bio', label: 'Professional Bio', mandatory: false },
+          { key: 'linkedinUrl', label: 'LinkedIn Profile', mandatory: false },
+        ];
+
       case 'CANDIDATE':
         return [
           { key: 'firstName', label: 'First Name', mandatory: true },
@@ -359,7 +372,7 @@ export class ProfileService {
     }
 
     // 2. Role-Specific Professional Information Validation
-    if (['ADMIN', 'RECRUITER', 'INTERVIEWER'].includes(role)) {
+    if (['ADMIN', 'RECRUITER', 'INTERVIEWER', 'HIRING_MANAGER'].includes(role)) {
       if (dto.title !== undefined) {
         const trimmed = dto.title.trim();
         if (!trimmed) {

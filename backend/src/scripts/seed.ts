@@ -102,13 +102,29 @@ async function seedDatabase() {
       lastName: 'Vance',
       email: 'marcus.vance@acme.com',
       password: 'Password123!',
-      role: 'INTERVIEWER',
+      role: 'HIRING_MANAGER',
       title: 'Director of Engineering',
       department: 'Core Infrastructure',
       skills: ['Behavioral', 'Leadership', 'Strategic Architecture', 'Cross-Functional Collaboration'],
       weeklyCapacityHours: 3,
       dailyInterviewLimit: 1,
+      isVerified: true,
       avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    });
+
+    const candidateUser = await User.create({
+      organizationId: org._id,
+      firstName: 'Emily',
+      lastName: 'Zhang',
+      email: 'emily.zhang@example.com',
+      password: 'Password123!',
+      role: 'CANDIDATE',
+      title: 'Senior Software Engineer',
+      department: 'Product Engineering',
+      phone: '+1 415-555-0192',
+      skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'GraphQL', 'AWS'],
+      isVerified: true,
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
     });
 
     logger.info('Created 5 core users.');

@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'CANDIDATE';
+export type UserRole = 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'CANDIDATE';
 export type CandidateStage = 'APPLIED' | 'SCREENING' | 'INTERVIEWING' | 'OFFER' | 'HIRED' | 'REJECTED';
 
 export interface User {

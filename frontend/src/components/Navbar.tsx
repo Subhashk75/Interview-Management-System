@@ -72,6 +72,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateTab }) => {
             >
               Interviewer (David)
             </button>
+            <button
+              onClick={() => switchDemoRole('HIRING_MANAGER')}
+              className={`px-2 py-0.5 text-xs font-medium rounded transition ${
+                user?.role === 'HIRING_MANAGER' ? 'bg-blue-600 text-white shadow' : 'text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              Manager (Marcus)
+            </button>
+            <button
+              onClick={() => switchDemoRole('CANDIDATE')}
+              className={`px-2 py-0.5 text-xs font-medium rounded transition ${
+                user?.role === 'CANDIDATE' ? 'bg-blue-600 text-white shadow' : 'text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              Candidate (Emily)
+            </button>
           </div>
 
           {/* User Status / Login / Signup Buttons */}

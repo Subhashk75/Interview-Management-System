@@ -16,7 +16,7 @@ interface AuthContextType {
   verifyOtp: (email: string, otp: string) => Promise<void>;
   resendOtp: (email: string) => Promise<void>;
   logout: () => void;
-  switchDemoRole: (role: 'ADMIN' | 'RECRUITER' | 'INTERVIEWER') => Promise<void>;
+  switchDemoRole: (role: 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'CANDIDATE') => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<any>;
   refreshUser: () => Promise<void>;
   loading: boolean;
@@ -119,13 +119,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const switchDemoRole = async (role: 'ADMIN' | 'RECRUITER' | 'INTERVIEWER') => {
+  const switchDemoRole = async (role: 'ADMIN' | 'RECRUITER' | 'INTERVIEWER' | 'HIRING_MANAGER' | 'CANDIDATE') => {
     setLoading(true);
     try {
       const emailMap = {
         ADMIN: 'admin@acme.com',
         RECRUITER: 'recruiter@acme.com',
         INTERVIEWER: 'david.kim@acme.com',
+        HIRING_MANAGER: 'marcus.vance@acme.com',
+        CANDIDATE: 'emily.zhang@example.com',
       };
       await login(emailMap[role], 'Password123!');
     } catch (err) {

@@ -118,6 +118,35 @@ async function autoSeedData() {
     avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
   });
 
+  const hiringManager = await User.create({
+    organizationId: org._id,
+    firstName: 'Marcus',
+    lastName: 'Vance',
+    email: 'marcus.vance@acme.com',
+    password: 'Password123!',
+    role: 'HIRING_MANAGER',
+    title: 'Director of Engineering',
+    department: 'Product Engineering',
+    skills: ['Leadership', 'System Architecture', 'People Management'],
+    isVerified: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+  });
+
+  const candidateUser = await User.create({
+    organizationId: org._id,
+    firstName: 'Emily',
+    lastName: 'Zhang',
+    email: 'emily.zhang@example.com',
+    password: 'Password123!',
+    role: 'CANDIDATE',
+    title: 'Senior Software Engineer',
+    department: 'Product Engineering',
+    phone: '+1 415-555-0192',
+    skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'GraphQL', 'AWS'],
+    isVerified: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+  });
+
   const job1 = await Job.create({
     organizationId: org._id,
     title: 'Senior Full Stack Engineer (MERN / Distributed)',
@@ -126,7 +155,7 @@ async function autoSeedData() {
     employmentType: 'FULL_TIME',
     status: 'OPEN',
     openingsCount: 3,
-    hiringManagerId: interviewer1._id,
+    hiringManagerId: hiringManager._id,
     recruiterId: recruiter._id,
     description: 'Looking for a Senior Full Stack Engineer to lead scalable interview workflow microservices.',
     requirements: ['5+ years React/Node.js', 'Experience with distributed systems', 'Strong API design'],
