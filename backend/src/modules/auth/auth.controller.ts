@@ -30,7 +30,8 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
       throw new AppError('Email and password are required.', 400, 'MISSING_CREDENTIALS');
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password +otp +otpExpiresAt');
+    const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const user = await User.findOne({ email: cleanEmail }).select('+password +otp +otpExpiresAt');
     if (!user) {
       throw new AppError('Invalid email or password.', 401, 'INVALID_CREDENTIALS');
     }

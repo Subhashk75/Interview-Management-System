@@ -49,11 +49,11 @@ export async function connectDB(): Promise<void> {
     }
   }
 
-  // Check if database needs initial seeding
+  // Check if database needs initial seeding or missing core demo users
   try {
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      logger.info('Database is empty. Populating default seed dataset...');
+    const recruiterExists = await User.findOne({ email: 'recruiter@acme.com' });
+    if (!recruiterExists) {
+      logger.info('Core demo users not found in database. Populating default seed dataset...');
       await autoSeedData();
     }
   } catch (seedErr: any) {
@@ -62,19 +62,30 @@ export async function connectDB(): Promise<void> {
 }
 
 async function autoSeedData() {
-  const org = await Organization.create({
-    name: 'Acme Technologies Global',
-    domain: 'acme.com',
-    settings: {
-      timezone: 'America/New_York',
-      workingHoursStart: '09:00',
-      workingHoursEnd: '18:00',
-      defaultBufferMinutes: 15,
-      scorecardBlindingEnabled: true,
-    },
-  });
+  let org = await Organization.findOne();
+  if (!org) {
+    org = await Organization.create({
+      name: 'Acme Technologies Global',
+      domain: 'acme.com',
+      settings: {
+        timezone: 'America/New_York',
+        workingHoursStart: '09:00',
+        workingHoursEnd: '18:00',
+        defaultBufferMinutes: 15,
+        scorecardBlindingEnabled: true,
+      },
+    });
+  }
 
-  const admin = await User.create({
+  const ensureUser = async (data: any) => {
+    let existing = await User.findOne({ email: data.email });
+    if (!existing) {
+      existing = await User.create(data);
+    }
+    return existing;
+  };
+
+  const admin = await ensureUser({
     organizationId: org._id,
     firstName: 'Sarah',
     lastName: 'Connor',
@@ -88,7 +99,7 @@ async function autoSeedData() {
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
   });
 
-  const recruiter = await User.create({
+  const recruiter = await ensureUser({
     organizationId: org._id,
     firstName: 'Alex',
     lastName: 'Rivera',
@@ -102,7 +113,7 @@ async function autoSeedData() {
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
   });
 
-  const interviewer1 = await User.create({
+  const interviewer1 = await ensureUser({
     organizationId: org._id,
     firstName: 'David',
     lastName: 'Kim',
@@ -118,7 +129,7 @@ async function autoSeedData() {
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
   });
 
-  const interviewer2 = await User.create({
+  const interviewer2 = await ensureUser({
     organizationId: org._id,
     firstName: 'Elena',
     lastName: 'Rostova',
@@ -134,7 +145,7 @@ async function autoSeedData() {
     avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150',
   });
 
-  const hiringManager = await User.create({
+  const hiringManager = await ensureUser({
     organizationId: org._id,
     firstName: 'Marcus',
     lastName: 'Vance',
@@ -148,7 +159,7 @@ async function autoSeedData() {
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
   });
 
-  const candidateUser = await User.create({
+  const candidateUser = await ensureUser({
     organizationId: org._id,
     firstName: 'Emily',
     lastName: 'Zhang',
@@ -162,6 +173,12 @@ async function autoSeedData() {
     isVerified: true,
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
   });
+
+  const jobCount = await Job.countDocuments();
+  if (jobCount > 0) {
+    logger.info('Jobs and candidate pipeline data already populated.');
+    return;
+  }
 
   const job1 = await Job.create({
     organizationId: org._id,

@@ -236,6 +236,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 {loading ? 'Authenticating...' : 'Sign In'}
               </button>
 
+              {/* Quick Demo Credentials */}
+              <div className="pt-3 border-t border-slate-800">
+                <p className="text-[11px] font-medium text-slate-400 mb-2">
+                  Quick Demo Logins (Password: <code className="text-blue-400 font-mono">Password123!</code>):
+                </p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('recruiter@acme.com');
+                      setPassword('Password123!');
+                    }}
+                    className="px-2 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[10px] font-semibold border border-slate-700/60 transition"
+                  >
+                    Recruiter
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('admin@acme.com');
+                      setPassword('Password123!');
+                    }}
+                    className="px-2 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[10px] font-semibold border border-slate-700/60 transition"
+                  >
+                    Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('emily.zhang@example.com');
+                      setPassword('Password123!');
+                    }}
+                    className="px-2 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[10px] font-semibold border border-slate-700/60 transition"
+                  >
+                    Candidate
+                  </button>
+                </div>
+              </div>
+
               <div className="pt-2 text-center text-xs text-slate-400">
                 Don't have an account?{' '}
                 <button
