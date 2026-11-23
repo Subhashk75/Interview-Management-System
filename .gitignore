@@ -1,5 +1,39 @@
-node_modules
-dist
+# Environment and local tools
 .env
+.env.local
+.env.*.local
+.tools/
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+.mvn/wrapper/maven-wrapper.jar
+.project
+.classpath
+.settings/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+node_modules/
+.next/
+dist/
+
+# Uploaded Files
+uploads/
+backend/uploads/
+
+# OS / IDE
 .DS_Store
+Thumbs.db
 *.log

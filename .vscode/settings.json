@@ -1,0 +1,12 @@
+{
+  "java.jdt.ls.java.home": "${workspaceFolder}/.tools/jdk-21.0.5+11",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-21",
+      "path": "${workspaceFolder}/.tools/jdk-21.0.5+11",
+      "default": true
+    }
+  ],
+  "maven.executable.path": "${workspaceFolder}/.tools/apache-maven-3.9.9/bin/mvn.cmd",
+  "typescript.tsdk": "frontend/node_modules/typescript/lib"
+}

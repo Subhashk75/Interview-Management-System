@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "1. Start MongoDB",
+      "type": "shell",
+      "command": "& \"${workspaceFolder}\\.tools\\mongodb-win32-x86_64-windows-7.0.14\\bin\\mongod.exe\" --dbpath \"${workspaceFolder}\\.tools\\data\\db\" --bind_ip 127.0.0.1 --port 27017",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "ims",
+        "panel": "dedicated",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "2. Start Backend (Spring Boot)",
+      "type": "shell",
+      "command": "$env:JAVA_HOME = \"${workspaceFolder}\\.tools\\jdk-21.0.5+11\"; & \"${workspaceFolder}\\.tools\\jdk-21.0.5+11\\bin\\java.exe\" -jar backend\\target\\ims-backend-1.0.0.jar",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "ims",
+        "panel": "dedicated",
+        "reveal": "always"
+      },
+      "dependsOn": ["1. Start MongoDB"]
+    },
+    {
+      "label": "3. Start Frontend (Next.js)",
+      "type": "shell",
+      "command": "cd frontend; npm run dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "ims",
+        "panel": "dedicated",
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "Run All (MongoDB + Backend + Frontend)",
+      "dependsOn": [
+        "1. Start MongoDB",
+        "2. Start Backend (Spring Boot)",
+        "3. Start Frontend (Next.js)"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
