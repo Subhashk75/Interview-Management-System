@@ -14,10 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseCookie;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-
-import java.util.Arrays;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -46,7 +42,7 @@ public class AuthController {
     @PostMapping("/refresh")
     @Operation(summary = "Refresh JWT Token", description = "Exchanges a valid refresh token for a newly signed access token")
     public ResponseEntity<ApiResponse<LoginResponse>> refreshToken(
-            @CookieValue(name = "ims_refresh_token", required = false) String refreshToken
+            @CookieValue(name = "${app.jwt.refresh-cookie-name:ims_refresh_token}", required = false) String refreshToken
     ) {
         if (refreshToken == null) {
             throw new com.ims.backend.exception.UnauthorizedException("Refresh token is missing");
@@ -75,8 +71,7 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "User Logout", description = "Stateless logout confirmation")
     public ResponseEntity<ApiResponse<Void>> logout(
-            @CookieValue(name = "ims_refresh_token", required = false) String refreshToken,
-            HttpServletRequest request
+            @CookieValue(name = "${app.jwt.refresh-cookie-name:ims_refresh_token}", required = false) String refreshToken
     ) {
         authService.logout(refreshToken);
         ResponseCookie cookie = buildRefreshCookie(null, 0);

@@ -21,10 +21,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.*;
@@ -49,9 +50,6 @@ class UserServiceTest {
 
     @Mock
     private AuditService auditService;
-
-    @Mock
-    private MongoTemplate mongoTemplate;
 
     @InjectMocks
     private UserService userService;
@@ -170,13 +168,13 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Should retrieve paginated list of users using mongoTemplate query")
+    @DisplayName("Should retrieve paginated list of users using JPA specification query")
     void getUsers_Success() {
         List<User> userList = List.of(sampleUser);
         Pageable pageable = PageRequest.of(0, 10);
+        Page<User> userPage = new PageImpl<>(userList, pageable, 1);
 
-        when(mongoTemplate.find(any(Query.class), eq(User.class))).thenReturn(userList);
-        when(mongoTemplate.count(any(Query.class), eq(User.class))).thenReturn(1L);
+        when(userRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(userPage);
         when(userMapper.toDto(sampleUser)).thenReturn(sampleUserDto);
 
         PageResponse<UserDto> response = userService.getUsers(

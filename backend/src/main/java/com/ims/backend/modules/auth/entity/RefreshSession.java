@@ -1,10 +1,8 @@
 package com.ims.backend.modules.auth.entity;
 
 import com.ims.backend.common.BaseEntity;
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
@@ -13,20 +11,39 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "refresh_sessions")
-@CompoundIndex(name = "user_family_idx", def = "{'userId': 1, 'familyId': 1}")
+@Entity
+@Table(
+    name = "refresh_sessions",
+    indexes = {
+        @Index(name = "idx_refresh_session_id", columnList = "session_id", unique = true),
+        @Index(name = "idx_refresh_user_family", columnList = "user_id, family_id"),
+        @Index(name = "idx_refresh_expires_at", columnList = "expires_at")
+    }
+)
 public class RefreshSession extends BaseEntity {
 
-    @Indexed
+    @Column(name = "session_id", nullable = false, unique = true, length = 100)
     private String sessionId;
 
-    @Indexed
+    @Column(name = "user_id", nullable = false, length = 36)
     private String userId;
 
+    @Column(name = "family_id", length = 100)
     private String familyId;
+
+    @Column(name = "token_hash", nullable = false, length = 255)
     private String tokenHash;
+
+    @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
-    private boolean revoked;
+
+    @Builder.Default
+    @Column(name = "revoked", nullable = false)
+    private boolean revoked = false;
+
+    @Column(name = "revoked_at")
     private Instant revokedAt;
+
+    @Column(name = "replaced_by_session_id", length = 100)
     private String replacedBySessionId;
 }

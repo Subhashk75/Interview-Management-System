@@ -6,13 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(properties = {
-    "spring.data.mongodb.uri=mongodb://localhost:27017/ims_test_db"
-})
+@SpringBootTest
 class ApplicationTests {
 
     @Autowired(required = false)

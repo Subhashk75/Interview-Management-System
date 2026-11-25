@@ -12,16 +12,15 @@ import com.ims.backend.modules.users.entity.User;
 import com.ims.backend.modules.users.entity.UserRole;
 import com.ims.backend.modules.users.entity.UserStatus;
 import com.ims.backend.modules.users.repository.UserRepository;
+import com.ims.backend.modules.users.specification.UserSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.security.SecureRandom;
@@ -36,11 +35,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final AuditService auditService;
-    private final MongoTemplate mongoTemplate;
 
     private static final String CHAR_POOL = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    @Transactional
     public CreatedUserResponse createUser(CreateUserRequest request, UserPrincipal actor) {
         String email = request.getEmail().trim().toLowerCase();
 
@@ -92,53 +91,21 @@ public class UserService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<UserDto> getUsers(String search, UserRole role, String department, UserStatus status, Pageable pageable) {
-        Query query = new Query().with(pageable);
-        List<Criteria> criteriaList = new ArrayList<>();
-
-        if (StringUtils.hasText(search)) {
-            String regex = ".*" + search.trim() + ".*";
-            criteriaList.add(new Criteria().orOperator(
-                    Criteria.where("email").regex(regex, "i"),
-                    Criteria.where("firstName").regex(regex, "i"),
-                    Criteria.where("lastName").regex(regex, "i")
-            ));
-        }
-
-        if (role != null) {
-            criteriaList.add(Criteria.where("role").is(role));
-        }
-
-        if (StringUtils.hasText(department)) {
-            criteriaList.add(Criteria.where("department").regex(department.trim(), "i"));
-        }
-
-        if (status != null) {
-            criteriaList.add(Criteria.where("status").is(status));
-        }
-
-        if (!criteriaList.isEmpty()) {
-            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
-        }
-
-        List<User> users = mongoTemplate.find(query, User.class);
-        long count = mongoTemplate.count(Query.of(query).limit(-1).skip(-1), User.class);
-
-        Page<UserDto> page = PageableExecutionUtils.getPage(
-                users,
-                pageable,
-                () -> count
-        ).map(userMapper::toDto);
-
+        Specification<User> spec = UserSpecification.filterUsers(search, role, department, status);
+        Page<UserDto> page = userRepository.findAll(spec, pageable).map(userMapper::toDto);
         return PageResponse.from(page);
     }
 
+    @Transactional(readOnly = true)
     public UserDto getUserById(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         return userMapper.toDto(user);
     }
 
+    @Transactional
     public UserDto updateUser(String id, UpdateUserRequest request, UserPrincipal actor) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
@@ -168,6 +135,7 @@ public class UserService {
         return userMapper.toDto(updatedUser);
     }
 
+    @Transactional
     public UserDto updateUserStatus(String id, UserStatus newStatus, UserPrincipal actor) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
@@ -197,6 +165,7 @@ public class UserService {
         return userMapper.toDto(updatedUser);
     }
 
+    @Transactional(readOnly = true)
     public List<InterviewerSummaryDto> getInterviewers(String department, String skill) {
         List<User> interviewers = userRepository.findByRoleAndStatus(UserRole.ROLE_INTERVIEWER, UserStatus.ACTIVE);
 
@@ -209,11 +178,12 @@ public class UserService {
                         .fullName(u.getFullName())
                         .department(u.getDepartment())
                         .skills(u.getSkills())
-                        .activeInterviewsCount(0) // In Sprint 6 linked with active interview queries
+                        .activeInterviewsCount(0)
                         .build())
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Object> getUserMetrics() {
         long totalUsers = userRepository.count();
         long activeUsers = userRepository.countByStatus(UserStatus.ACTIVE);

@@ -17,9 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(properties = {
-    "spring.data.mongodb.uri=mongodb://localhost:27017/ims_test_db"
-})
+@SpringBootTest
 class AuthServiceTest {
 
     @Autowired

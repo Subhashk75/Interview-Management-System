@@ -58,7 +58,7 @@ public class DataInitializer implements CommandLineRunner {
                     .role(UserRole.ROLE_INTERVIEWER)
                     .status(UserStatus.ACTIVE)
                     .department("Engineering")
-                    .skills(List.of("Java", "Spring Boot", "Distributed Systems", "MongoDB"))
+                    .skills(List.of("Java", "Spring Boot", "Distributed Systems", "MySQL"))
                     .requiresPasswordChange(true)
                     .build();
 
